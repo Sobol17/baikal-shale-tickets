@@ -1,4 +1,4 @@
-<x-layouts.app title="Оплата принята">
+<x-layouts.app title="Оплата принята" robots="noindex,nofollow">
     <section class="app-container page-section">
         <div class="panel content-panel result-panel">
             <p class="kicker">Оплата</p>

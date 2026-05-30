@@ -1,23 +1,67 @@
-<x-layouts.app title="Экскурсии Байкал Шале">
+@php
+    $excursions = $excursionsBySeason->flatten(1)->values();
+    $homeUrl = route('home', absolute: true);
+    $description = 'Экскурсии Байкал Шале: маршруты по Байкалу, ближайшие отправки и бронирование билетов без регистрации.';
+    $structuredData = [
+        [
+            '@context' => 'https://schema.org',
+            '@type' => 'WebSite',
+            'name' => 'Байкал Шале',
+            'url' => $homeUrl,
+            'potentialAction' => [
+                '@type' => 'SearchAction',
+                'target' => route('home', ['search' => '{search_term_string}'], absolute: true),
+                'query-input' => 'required name=search_term_string',
+            ],
+        ],
+        [
+            '@context' => 'https://schema.org',
+            '@type' => 'Organization',
+            'name' => 'Байкал Шале',
+            'url' => $homeUrl,
+            'email' => 'info@baikalvisa.ru',
+            'telephone' => '+79397941808',
+        ],
+        [
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => [
+                [
+                    '@type' => 'ListItem',
+                    'position' => 1,
+                    'name' => 'Экскурсии',
+                    'item' => $homeUrl,
+                ],
+            ],
+        ],
+        [
+            '@context' => 'https://schema.org',
+            '@type' => 'ItemList',
+            'name' => 'Экскурсии Байкал Шале',
+            'itemListElement' => $excursions
+                ->map(fn ($excursion, int $index): array => [
+                    '@type' => 'ListItem',
+                    'position' => $index + 1,
+                    'url' => route('excursions.show', $excursion, absolute: true),
+                    'name' => $excursion->title,
+                ])
+                ->all(),
+        ],
+    ];
+@endphp
+
+<x-layouts.app
+    title="Экскурсии Байкал Шале"
+    :description="$description"
+    :canonical="$homeUrl"
+    :structured-data="$structuredData"
+>
     <section class="catalog-intro">
         <div class="app-container catalog-intro__grid">
             <div>
-                <p class="kicker">Купить билет</p>
                 <h1 class="page-title">Экскурсии Байкал Шале</h1>
                 <p class="lead">Выберите маршрут, ближайшую отправку и оформите билеты без регистрации.</p>
             </div>
-
-            <form class="header-search" method="GET" action="{{ route('home') }}">
-                <input
-                    class="header-search__input"
-                    type="search"
-                    name="search"
-                    value="{{ $search }}"
-                    placeholder="Название экскурсии или маршрута"
-                    aria-label="Название экскурсии или маршрута"
-                >
-                <button class="header-search__button" type="submit">Найти</button>
-            </form>
         </div>
     </section>
 
@@ -50,8 +94,8 @@
                         @php($nextSlot = $excursion->slots->first())
 
                         <article class="excursion-card">
-                            @if ($excursion->cover_image)
-                                <img class="excursion-card__image" src="{{ $excursion->cover_image }}" alt="{{ $excursion->title }}">
+                            @if ($excursion->cover_image_url)
+                                <img class="excursion-card__image" src="{{ $excursion->cover_image_url }}" alt="{{ $excursion->title }}">
                             @else
                                 <div class="excursion-card__fallback" aria-hidden="true">БШ</div>
                             @endif

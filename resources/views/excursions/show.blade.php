@@ -1,4 +1,55 @@
-<x-layouts.app :title="$excursion->title">
+@php
+    $canonical = route('excursions.show', $excursion, absolute: true);
+    $image = $excursion->cover_image_url;
+
+    if ($image && ! str_starts_with($image, 'http://') && ! str_starts_with($image, 'https://')) {
+        $image = url($image);
+    }
+
+    $offerPriceCents = $slots->first()?->price_cents ?? $excursion->base_price_cents;
+    $structuredData = [
+        '@context' => 'https://schema.org',
+        '@type' => 'TouristTrip',
+        'name' => $excursion->title,
+        'description' => trim(strip_tags($excursion->short_description)),
+        'url' => $canonical,
+        'duration' => 'PT'.$excursion->duration_minutes.'M',
+        'touristType' => 'экскурсанты',
+        'itinerary' => [
+            '@type' => 'Place',
+            'name' => $excursion->meeting_point,
+        ],
+        'provider' => [
+            '@type' => 'Organization',
+            'name' => 'Байкал Шале',
+            'url' => route('home', absolute: true),
+            'email' => 'info@baikalvisa.ru',
+            'telephone' => '+79397941808',
+        ],
+        'offers' => [
+            '@type' => 'Offer',
+            'url' => $canonical,
+            'priceCurrency' => 'RUB',
+            'price' => number_format($offerPriceCents / 100, 2, '.', ''),
+            'availability' => $slots->isNotEmpty()
+                ? 'https://schema.org/InStock'
+                : 'https://schema.org/OutOfStock',
+        ],
+    ];
+
+    if ($image) {
+        $structuredData['image'] = $image;
+    }
+@endphp
+
+<x-layouts.app
+    :title="$excursion->title"
+    :description="$excursion->short_description"
+    :canonical="$canonical"
+    :image="$image"
+    type="product"
+    :structured-data="$structuredData"
+>
     <div class="app-container detail-layout">
         <main class="detail-main">
             <section class="panel detail-hero">
@@ -51,7 +102,7 @@
 
             <section class="panel content-panel">
                 <h2>Описание экскурсии</h2>
-                <p>{{ $excursion->full_description }}</p>
+                <div class="content-body">{!! $excursion->full_description !!}</div>
             </section>
 
             @if ($excursion->rules)
@@ -63,7 +114,6 @@
         </main>
 
         <aside class="panel detail-sidebar">
-            <p class="kicker">Расписание</p>
             <h2 class="aside-title">Выберите ближайший рейс</h2>
             <p class="muted-copy">Выберите удобное время отправления и перейдите к оформлению билетов.</p>
 

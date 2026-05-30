@@ -1,4 +1,4 @@
-<x-layouts.app title="Бронирование">
+<x-layouts.app title="Бронирование" robots="noindex,nofollow">
     <section class="app-container page-section">
         <div class="panel content-panel narrow-panel">
             @if (session('status'))

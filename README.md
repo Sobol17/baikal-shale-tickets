@@ -21,6 +21,7 @@ Shale Tickets - Laravel-приложение для бронирования б�
 - [Архитектура](docs/architecture.md)
 - [Code-style](docs/code-style.md)
 - [Deploy](docs/deploy.md)
+- [Docker deploy guide](docs/docker-deploy.md)
 
 Перед изменениями в доменной логике сначала проверьте эти документы. Если изменение меняет архитектурное правило или границы модуля, обновите соответствующий документ вместе с кодом.
 

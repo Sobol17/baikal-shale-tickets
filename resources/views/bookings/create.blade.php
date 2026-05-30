@@ -12,7 +12,7 @@
     $initialSeats = (int) old('seats_count', max(1, count($initialPassengers)));
 @endphp
 
-<x-layouts.app title="Оформление заказа">
+<x-layouts.app title="Оформление заказа" robots="noindex,nofollow">
     <form
         class="app-container checkout-grid"
         method="POST"
@@ -29,7 +29,6 @@
         <main class="checkout-main">
             <section class="panel checkout-brief">
                 <a href="{{ route('excursions.show', $slot->excursion) }}" class="button button--ghost">Назад к расписанию</a>
-                <p class="kicker kicker--spaced">Оформление заказа</p>
                 <h1>{{ $slot->excursion->title }}</h1>
 
                 <div class="trip-facts">
@@ -55,7 +54,6 @@
             <section class="panel checkout-section">
                 <div class="ticket-toolbar">
                     <div>
-                        <p class="kicker">Билеты</p>
                         <h2>Пассажиры</h2>
                     </div>
 
@@ -133,7 +131,15 @@
 
                             <label class="form-field">
                                 <span class="form-label">Телефон</span>
-                                <input class="form-control" x-bind:name="'passengers[' + index + '][phone]'" x-model="passenger.phone" placeholder="+7 912 345-67-89">
+                                <input
+                                    class="form-control"
+                                    type="tel"
+                                    inputmode="tel"
+                                    x-bind:name="'passengers[' + index + '][phone]'"
+                                    x-model="passenger.phone"
+                                    x-on:input="passenger.phone = formatPhoneNumber($event.target.value); $event.target.value = passenger.phone"
+                                    placeholder="+7 912 345-67-89"
+                                >
                             </label>
                         </div>
                     </article>
@@ -141,7 +147,6 @@
             </section>
 
             <section class="panel checkout-section">
-                <p class="kicker">Данные покупателя</p>
                 <h2>Покупатель билетов</h2>
 
                 <div class="field-grid">
@@ -170,7 +175,18 @@
 
                     <div class="form-field">
                         <label class="form-label" for="customer_phone">Телефон <span class="required">*</span></label>
-                        <input class="form-control" id="customer_phone" name="customer_phone" value="{{ old('customer_phone') }}" placeholder="+7 912 345-67-89" required>
+                        <input
+                            class="form-control"
+                            id="customer_phone"
+                            name="customer_phone"
+                            type="tel"
+                            inputmode="tel"
+                            value="{{ old('customer_phone') }}"
+                            x-init="$el.value = formatPhoneNumber($el.value)"
+                            x-on:input="$event.target.value = formatPhoneNumber($event.target.value)"
+                            placeholder="+7 912 345-67-89"
+                            required
+                        >
                         <p class="field-help">Укажите номер, чтобы мы могли связаться с вами при переносе или отмене рейса.</p>
                     </div>
                 </div>

@@ -11,6 +11,8 @@ use App\Modules\Excursions\Models\Excursion;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -39,9 +41,21 @@ class ExcursionResource extends Resource
             TextInput::make('duration_minutes')->label('Длительность, минут')->numeric()->required()->minValue(1),
             TextInput::make('base_price_cents')->label('Базовая цена, коп.')->numeric()->required()->minValue(1),
             TextInput::make('meeting_point')->label('Место встречи')->required()->maxLength(255),
-            TextInput::make('cover_image')->label('Обложка')->maxLength(255),
+            FileUpload::make('cover_image')
+                ->label('Обложка')
+                ->helperText('Загрузите изображение в пропорции 16:9. Подойдут размеры 1280x720, 1600x900, 1920x1080. Максимальный размер файла: 4 МБ.')
+                ->image()
+                ->disk('public')
+                ->directory('excursions/covers')
+                ->visibility('public')
+                ->imagePreviewHeight('180')
+                ->imageAspectRatio('16:9')
+                ->maxSize(4096)
+                ->openable()
+                ->downloadable()
+                ->columnSpanFull(),
             Textarea::make('short_description')->label('Краткое описание')->required()->rows(3)->maxLength(500),
-            Textarea::make('full_description')->label('Полное описание')->required()->rows(8)->columnSpanFull(),
+            RichEditor::make('full_description')->label('Полное описание')->required()->columnSpanFull(),
             Textarea::make('rules')->label('Организационная информация')->rows(4)->columnSpanFull(),
         ]);
     }

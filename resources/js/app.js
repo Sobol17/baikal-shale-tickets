@@ -2,6 +2,109 @@ import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
 
+window.siteSearch = ({ endpoint, initialQuery = '' }) => ({
+    isOpen: false,
+    query: String(initialQuery || ''),
+    endpoint,
+    results: [],
+    isLoading: false,
+    hasSearched: false,
+    searchTimer: null,
+    abortController: null,
+
+    search() {
+        window.clearTimeout(this.searchTimer);
+
+        const query = this.query.trim();
+
+        if (query.length < 2) {
+            this.reset();
+
+            return;
+        }
+
+        this.isLoading = true;
+        this.hasSearched = false;
+        this.close();
+
+        this.searchTimer = window.setTimeout(() => {
+            this.fetchResults(query);
+        }, 250);
+    },
+
+    async fetchResults(query) {
+        if (this.abortController) {
+            this.abortController.abort();
+        }
+
+        this.abortController = new AbortController();
+
+        try {
+            const url = new URL(this.endpoint, window.location.origin);
+
+            url.searchParams.set('search', query);
+
+            const response = await window.fetch(url.toString(), {
+                headers: {
+                    Accept: 'application/json',
+                },
+                signal: this.abortController.signal,
+            });
+
+            if (!response.ok) {
+                throw new Error('Search request failed');
+            }
+
+            const data = await response.json();
+
+            this.results = Array.isArray(data.items) ? data.items : [];
+            this.hasSearched = true;
+            this.isLoading = false;
+            this.open();
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                return;
+            }
+
+            this.results = [];
+            this.hasSearched = true;
+            this.isLoading = false;
+            this.open();
+        }
+    },
+
+    open() {
+        if (this.hasSearched) {
+            this.isOpen = true;
+        }
+    },
+
+    close() {
+        this.isOpen = false;
+    },
+
+    reset() {
+        window.clearTimeout(this.searchTimer);
+
+        if (this.abortController) {
+            this.abortController.abort();
+        }
+
+        this.results = [];
+        this.isLoading = false;
+        this.hasSearched = false;
+        this.close();
+    },
+
+    goToFirstResult() {
+        const [firstResult] = this.results;
+
+        if (firstResult?.url) {
+            window.location.href = firstResult.url;
+        }
+    },
+});
+
 window.bookingCheckout = ({ priceCents, initialSeats, initialPassengers }) => ({
     priceCents: Number(priceCents),
     seats: Number(initialSeats || 1),
@@ -46,8 +149,54 @@ window.bookingCheckout = ({ priceCents, initialSeats, initialPassengers }) => ({
             middle_name: passenger.middle_name || '',
             no_middle_name: noMiddleName,
             citizenship: passenger.citizenship || 'Россия',
-            phone: passenger.phone || '',
+            phone: this.formatPhoneNumber(passenger.phone || ''),
         };
+    },
+
+    formatPhoneNumber(value) {
+        const digits = String(value || '').replace(/\D/g, '');
+
+        if (!digits) {
+            return '';
+        }
+
+        let normalized = digits;
+
+        if (normalized.startsWith('8')) {
+            normalized = `7${normalized.slice(1)}`;
+        } else if (!normalized.startsWith('7')) {
+            normalized = `7${normalized}`;
+        }
+
+        normalized = normalized.slice(0, 11);
+
+        const parts = [
+            '+7',
+            normalized.slice(1, 4),
+            normalized.slice(4, 7),
+            normalized.slice(7, 9),
+            normalized.slice(9, 11),
+        ].filter(Boolean);
+
+        let formatted = parts[0];
+
+        if (parts[1]) {
+            formatted += ` ${parts[1]}`;
+        }
+
+        if (parts[2]) {
+            formatted += ` ${parts[2]}`;
+        }
+
+        if (parts[3]) {
+            formatted += `-${parts[3]}`;
+        }
+
+        if (parts[4]) {
+            formatted += `-${parts[4]}`;
+        }
+
+        return formatted;
     },
 
     money(cents) {

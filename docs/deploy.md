@@ -2,6 +2,8 @@
 
 Первый production-деплой рассчитан на VPS + Docker Compose.
 
+Подробный пошаговый гайд: [Docker deploy guide](docker-deploy.md).
+
 ## Подготовка
 
 1. Настроить домен и HTTPS на уровне reverse proxy или внешнего балансировщика.
