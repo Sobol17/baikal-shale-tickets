@@ -7,7 +7,7 @@
 В репозитории настроены:
 
 - `Dockerfile` с multi-stage сборкой:
-    - `base` - PHP 8.3 FPM Alpine с расширениями для Laravel и PostgreSQL;
+    - `base` - PHP 8.4 FPM Alpine с расширениями для Laravel и PostgreSQL;
     - `assets` - сборка Vite-ассетов через Node 22;
     - `app` - production-образ приложения с `composer install --no-dev`;
     - `nginx` - Nginx-образ со статикой из `public`.

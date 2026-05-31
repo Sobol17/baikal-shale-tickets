@@ -4,7 +4,7 @@ Shale Tickets - Laravel-приложение для бронирования б�
 
 ## Стек
 
-- PHP 8.3
+- PHP 8.4
 - Laravel 13
 - PostgreSQL
 - Blade + Alpine для frontend v1
