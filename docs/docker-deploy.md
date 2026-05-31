@@ -7,16 +7,16 @@
 В репозитории настроены:
 
 - `Dockerfile` с multi-stage сборкой:
-  - `base` - PHP 8.3 FPM Alpine с расширениями для Laravel и PostgreSQL;
-  - `assets` - сборка Vite-ассетов через Node 22;
-  - `app` - production-образ приложения с `composer install --no-dev`;
-  - `nginx` - Nginx-образ со статикой из `public`.
+    - `base` - PHP 8.3 FPM Alpine с расширениями для Laravel и PostgreSQL;
+    - `assets` - сборка Vite-ассетов через Node 22;
+    - `app` - production-образ приложения с `composer install --no-dev`;
+    - `nginx` - Nginx-образ со статикой из `public`.
 - `docker-compose.yml` с сервисами:
-  - `app` - PHP-FPM контейнер приложения;
-  - `worker` - Laravel queue worker;
-  - `nginx` - HTTP-вход в приложение на порту `80`;
-  - `postgres` - PostgreSQL 17;
-  - volumes `app_storage`, `postgres_data`.
+    - `app` - PHP-FPM контейнер приложения;
+    - `worker` - Laravel queue worker;
+    - `nginx` - HTTP-вход в приложение на порту `80`;
+    - `postgres` - PostgreSQL 17;
+    - volumes `app_storage`, `postgres_data`.
 - `.env.production.example` - пример production-переменных.
 - `docker/nginx/default.conf` - Nginx-конфигурация для Laravel front controller.
 
@@ -35,7 +35,7 @@ Reverse proxy может быть внешним Nginx на хосте, Caddy, T
 
 ```yaml
 ports:
-  - "80:80"
+    - "80:80"
 ```
 
 TLS-терминацию лучше держать снаружи compose-проекта. Контейнер приложения должен получать уже обычный HTTP-трафик от reverse proxy, а публичный `APP_URL` при этом должен быть `https://...`.
@@ -85,8 +85,8 @@ DB_CONNECTION=pgsql
 DB_HOST=postgres
 DB_PORT=5432
 DB_DATABASE=shale_tickets
-DB_USERNAME=shale
-DB_PASSWORD=change-me
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
 
 SESSION_DRIVER=database
 QUEUE_CONNECTION=database
@@ -252,7 +252,7 @@ server {
 
 ```yaml
 ports:
-  - "127.0.0.1:8080:80"
+    - "127.0.0.1:8080:80"
 ```
 
 Тогда `proxy_pass` должен указывать на `http://127.0.0.1:8080`.
@@ -286,18 +286,18 @@ docker compose restart worker
 
 ```yaml
 scheduler:
-  build:
-    context: .
-    target: app
-  restart: unless-stopped
-  command: php artisan schedule:work
-  env_file:
-    - .env
-  depends_on:
-    - app
-    - postgres
-  volumes:
-    - app_storage:/var/www/html/storage
+    build:
+        context: .
+        target: app
+    restart: unless-stopped
+    command: php artisan schedule:work
+    env_file:
+        - .env
+    depends_on:
+        - app
+        - postgres
+    volumes:
+        - app_storage:/var/www/html/storage
 ```
 
 До появления scheduled tasks этот сервис не обязателен.
