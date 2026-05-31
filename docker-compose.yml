@@ -1,50 +1,50 @@
 services:
-  app:
-    build:
-      context: .
-      target: app
-    restart: unless-stopped
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-    volumes:
-      - app_storage:/var/www/html/storage
+    app:
+        build:
+            context: .
+            target: app
+        restart: unless-stopped
+        env_file:
+            - .env
+        depends_on:
+            - postgres
+        volumes:
+            - app_storage:/var/www/html/storage
 
-  worker:
-    build:
-      context: .
-      target: app
-    restart: unless-stopped
-    command: php artisan queue:work --sleep=3 --tries=3 --timeout=90
-    env_file:
-      - .env
-    depends_on:
-      - app
-      - postgres
-    volumes:
-      - app_storage:/var/www/html/storage
+    worker:
+        build:
+            context: .
+            target: app
+        restart: unless-stopped
+        command: php artisan queue:work --sleep=3 --tries=3 --timeout=90
+        env_file:
+            - .env
+        depends_on:
+            - app
+            - postgres
+        volumes:
+            - app_storage:/var/www/html/storage
 
-  nginx:
-    build:
-      context: .
-      target: nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    depends_on:
-      - app
+    nginx:
+        build:
+            context: .
+            target: nginx
+        restart: unless-stopped
+        ports:
+            - "127.0.0.1:8080:80"
+        depends_on:
+            - app
 
-  postgres:
-    image: postgres:17-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_DATABASE:-shale_tickets}
-      POSTGRES_USER: ${DB_USERNAME:-shale}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    postgres:
+        image: postgres:17-alpine
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${DB_DATABASE:-shale_tickets}
+            POSTGRES_USER: ${DB_USERNAME:-shale}
+            POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  app_storage:
-  postgres_data:
+    app_storage:
+    postgres_data:
