@@ -29,6 +29,19 @@ it('returns active excursions for header search', function (): void {
         ->assertJsonPath('items.0.url', route('excursions.show', $matched));
 });
 
+it('searches excursions without case sensitivity', function (): void {
+    $matched = Excursion::factory()->create([
+        'title' => 'Baikal Sunset Cruise',
+        'short_description' => 'Evening route',
+        'status' => ExcursionStatus::Active,
+    ]);
+
+    $this->getJson(route('excursions.search', ['search' => 'baikal sunset']))
+        ->assertOk()
+        ->assertJsonCount(1, 'items')
+        ->assertJsonPath('items.0.title', $matched->title);
+});
+
 it('returns an empty list for an empty search query', function (): void {
     Excursion::factory()->create();
 

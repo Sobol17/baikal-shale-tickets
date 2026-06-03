@@ -17,9 +17,9 @@ class ListActiveExcursionsAction
             ->with(['slots' => fn ($query) => $query->available()->orderBy('starts_at')])
             ->when($search, fn ($query) => $query->where(function ($query) use ($search): void {
                 $query
-                    ->where('title', 'like', "%{$search}%")
-                    ->orWhere('short_description', 'like', "%{$search}%")
-                    ->orWhere('full_description', 'like', "%{$search}%");
+                    ->whereLike('title', "%{$search}%")
+                    ->orWhereLike('short_description', "%{$search}%")
+                    ->orWhereLike('full_description', "%{$search}%");
             }))
             ->orderBy('season')
             ->orderBy('title')
