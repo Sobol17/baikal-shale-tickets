@@ -29,7 +29,6 @@ class BookingFactory extends Factory
                     'last_name' => fake()->lastName(),
                     'first_name' => fake()->firstName(),
                     'middle_name' => null,
-                    'no_middle_name' => true,
                     'citizenship' => 'Россия',
                     'phone' => fake()->phoneNumber(),
                 ],

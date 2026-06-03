@@ -37,6 +37,8 @@
         <meta name="description" content="{{ $metaDescription }}">
         <meta name="robots" content="{{ $robots }}">
         <link rel="canonical" href="{{ $canonicalUrl }}">
+        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="32x32">
+        <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
         <meta property="og:locale" content="{{ app()->getLocale() }}">
         <meta property="og:site_name" content="{{ $siteName }}">
         <meta property="og:type" content="{{ $type }}">
@@ -63,7 +65,7 @@
         >
             <div class="app-container site-header__inner">
                 <a href="{{ route('home') }}" class="brand-logo" aria-label="Байкал Шале билеты">
-                    <span class="brand-logo__mark">БШ</span>
+                    <img class="brand-logo__image" src="{{ asset('images/logo.webp') }}" alt="" aria-hidden="true">
                     <span class="brand-logo__text">
                         <span class="brand-logo__name">Байкал Шале</span>
                         <span class="brand-logo__caption">экскурсии и билеты</span>
@@ -142,6 +144,11 @@
                     >
                         <svg width="22" height="22" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M21.6826 29.9515C20.0143 29.9515 19.239 29.7069 17.8913 28.7284C17.0389 29.8292 14.3395 30.6894 14.2218 29.2177C14.2218 28.1128 13.9783 27.1792 13.7022 26.16C13.3734 24.9044 13 23.506 13 21.4798C13 16.6406 16.9537 13 21.638 13C26.3264 13 30 16.82 30 21.5247C30.0157 26.1566 26.2945 29.9268 21.6826 29.9515ZM21.7516 17.1828C19.4704 17.0646 17.6924 18.6505 17.2987 21.1374C16.974 23.1962 17.5504 25.7034 18.0415 25.8339C18.277 25.891 18.8696 25.4099 19.239 25.0389C19.8498 25.4627 20.5611 25.7172 21.3011 25.7768C23.6648 25.891 25.6846 24.0836 25.8433 21.7122C25.9357 19.3357 24.1157 17.3229 21.7516 17.1869L21.7516 17.1828Z" fill="currentColor"></path>
+                        </svg>
+                    </a>
+                    <a class="header-phone-link" href="tel:+79397941808" aria-label="Позвонить в Байкал Шале">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M6.6 3.8 8.9 3c.6-.2 1.3.1 1.6.7l1.1 2.5c.2.5.1 1.1-.3 1.5L10 9c.9 1.8 2.3 3.2 4 4l1.4-1.3c.4-.4 1-.5 1.5-.3l2.5 1.1c.6.3.9 1 .7 1.6l-.8 2.3c-.2.6-.7 1-1.3 1C11.7 17.4 6.6 12.3 6.6 6c0-.6.4-1.1 1-1.3Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
                         </svg>
                     </a>
                 </div>

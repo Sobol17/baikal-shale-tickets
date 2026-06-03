@@ -63,7 +63,7 @@ class Excursion extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('status', ExcursionStatus::Active);
+        return $query->where('status', ExcursionStatus::Active->value);
     }
 
     protected static function newFactory(): ExcursionFactory

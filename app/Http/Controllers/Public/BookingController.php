@@ -43,7 +43,6 @@ class BookingController extends Controller
             'passengers.*.last_name' => ['required', 'string', 'max:255'],
             'passengers.*.first_name' => ['required', 'string', 'max:255'],
             'passengers.*.middle_name' => ['nullable', 'string', 'max:255'],
-            'passengers.*.no_middle_name' => ['nullable', 'boolean'],
             'passengers.*.citizenship' => ['required', 'string', 'max:255'],
             'passengers.*.phone' => ['nullable', 'string', 'max:64'],
             'customer_last_name' => ['required', 'string', 'max:255'],
@@ -103,8 +102,7 @@ class BookingController extends Controller
                 'ticket_type' => $passenger['ticket_type'],
                 'last_name' => $passenger['last_name'],
                 'first_name' => $passenger['first_name'],
-                'middle_name' => $passenger['middle_name'] ?? null,
-                'no_middle_name' => (bool) ($passenger['no_middle_name'] ?? false),
+                'middle_name' => filled($passenger['middle_name'] ?? null) ? $passenger['middle_name'] : null,
                 'citizenship' => $passenger['citizenship'],
                 'phone' => $passenger['phone'] ?? null,
             ])

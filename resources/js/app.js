@@ -139,15 +139,12 @@ window.bookingCheckout = ({ priceCents, initialSeats, initialPassengers }) => ({
     },
 
     normalizePassenger(passenger) {
-        const noMiddleName = passenger.no_middle_name === true || passenger.no_middle_name === 1 || passenger.no_middle_name === '1';
-
         return {
             key: passenger.key || `${Date.now()}-${Math.random()}`,
             ticket_type: passenger.ticket_type || 'adult',
             last_name: passenger.last_name || '',
             first_name: passenger.first_name || '',
             middle_name: passenger.middle_name || '',
-            no_middle_name: noMiddleName,
             citizenship: passenger.citizenship || 'Россия',
             phone: this.formatPhoneNumber(passenger.phone || ''),
         };

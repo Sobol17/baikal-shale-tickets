@@ -4,7 +4,6 @@
         'last_name' => '',
         'first_name' => '',
         'middle_name' => '',
-        'no_middle_name' => false,
         'citizenship' => 'Россия',
         'phone' => '',
     ];
@@ -106,14 +105,8 @@
                                     x-bind:id="'middle-name-' + index"
                                     x-bind:name="'passengers[' + index + '][middle_name]'"
                                     x-model="passenger.middle_name"
-                                    x-bind:disabled="passenger.no_middle_name"
                                     placeholder="Отчество"
                                 >
-                                <label class="checkbox-row">
-                                    <input type="hidden" x-bind:name="'passengers[' + index + '][no_middle_name]'" value="0">
-                                    <input type="checkbox" value="1" x-bind:name="'passengers[' + index + '][no_middle_name]'" x-model="passenger.no_middle_name">
-                                    Нет отчества
-                                </label>
                             </div>
                         </div>
 

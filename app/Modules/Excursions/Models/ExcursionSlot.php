@@ -49,7 +49,7 @@ class ExcursionSlot extends Model
     public function scopeAvailable(Builder $query): Builder
     {
         return $query
-            ->where('status', ExcursionSlotStatus::Active)
+            ->where('status', ExcursionSlotStatus::Active->value)
             ->where('starts_at', '>', now());
     }
 

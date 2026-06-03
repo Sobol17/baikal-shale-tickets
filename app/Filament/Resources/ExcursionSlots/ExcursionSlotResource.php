@@ -39,7 +39,12 @@ class ExcursionSlotResource extends Resource
             DateTimePicker::make('ends_at')->label('Окончание')->seconds(false)->required(),
             TextInput::make('capacity')->label('Техническая вместимость')->numeric()->required()->minValue(1),
             TextInput::make('price_cents')->label('Цена, коп.')->numeric()->required()->minValue(1),
-            Select::make('status')->label('Статус')->options(ExcursionSlotStatus::options())->required(),
+            Select::make('status')
+                ->label('Статус')
+                ->options(ExcursionSlotStatus::options())
+                ->default(ExcursionSlotStatus::Active->value)
+                ->helperText('На сайте отображаются только активные будущие отправки.')
+                ->required(),
         ]);
     }
 
