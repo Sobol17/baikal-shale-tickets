@@ -532,6 +532,7 @@ textarea {
 
 .excursion-card {
     display: grid;
+    grid-template-rows: auto 1fr;
     min-height: 100%;
     overflow: hidden;
     border: 1px solid var(--line);
@@ -541,24 +542,28 @@ textarea {
 }
 
 .excursion-card__image {
-    aspect-ratio: 16 / 9;
     width: 100%;
+    height: clamp(180px, 18vw, 230px);
     object-fit: cover;
 }
 
 .excursion-card__fallback {
     display: grid;
-    aspect-ratio: 16 / 9;
+    height: clamp(180px, 18vw, 230px);
     place-items: center;
     border-bottom: 1px solid var(--line);
     background: rgba(255, 255, 255, 0.28);
-    color: var(--brand);
-    font-size: 28px;
-    font-weight: 760;
+}
+
+.excursion-card__fallback-logo {
+    width: 88px;
+    height: 88px;
+    object-fit: contain;
 }
 
 .excursion-card__body {
     display: grid;
+    grid-template-rows: 1fr auto auto;
     gap: 16px;
     padding: 18px;
 }
@@ -1271,6 +1276,11 @@ textarea {
     .field-grid--two,
     .trip-facts {
         grid-template-columns: 1fr;
+    }
+
+    .excursion-card__image,
+    .excursion-card__fallback {
+        height: 190px;
     }
 
     .slot-card {

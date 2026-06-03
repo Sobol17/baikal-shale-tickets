@@ -97,7 +97,9 @@
                             @if ($excursion->cover_image_url)
                                 <img class="excursion-card__image" src="{{ $excursion->cover_image_url }}" alt="{{ $excursion->title }}">
                             @else
-                                <div class="excursion-card__fallback" aria-hidden="true">БШ</div>
+                                <div class="excursion-card__fallback" aria-hidden="true">
+                                    <img class="excursion-card__fallback-logo" src="{{ asset('images/logo.webp') }}" alt="">
+                                </div>
                             @endif
 
                             <div class="excursion-card__body">
