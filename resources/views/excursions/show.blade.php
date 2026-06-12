@@ -6,7 +6,7 @@
         $image = url($image);
     }
 
-    $offerPriceCents = $slots->first()?->price_cents ?? $excursion->base_price_cents;
+    $offerPriceCents = $excursion->adult_price_cents;
     $structuredData = [
         '@context' => 'https://schema.org',
         '@type' => 'TouristTrip',
@@ -31,7 +31,7 @@
             'url' => $canonical,
             'priceCurrency' => 'RUB',
             'price' => number_format($offerPriceCents / 100, 2, '.', ''),
-            'availability' => $slots->isNotEmpty()
+            'availability' => $excursion->booking_ends_on && ! $excursion->booking_ends_on->isBefore(today())
                 ? 'https://schema.org/InStock'
                 : 'https://schema.org/OutOfStock',
         ],
@@ -70,36 +70,6 @@
                 </div>
             </section>
 
-            <section class="panel content-panel" id="schedule">
-                <h2>Ближайшие отправки</h2>
-
-                @if ($slots->isEmpty())
-                    <p>На эту экскурсию пока нет доступных отправок.</p>
-                @else
-                    <ul class="slot-list">
-                        @foreach ($slots as $slot)
-                            <li class="slot-card">
-                                <div>
-                                    <div class="slot-card__time">{{ $slot->starts_at->format('H:i') }}</div>
-                                    <span class="slot-card__date">{{ $slot->starts_at->format('d.m.Y') }}</span>
-                                </div>
-
-                                <div class="slot-card__route">
-                                    <span><strong>Отправление:</strong> {{ $slot->starts_at->format('d.m.Y H:i') }}</span>
-                                    <span><strong>Окончание:</strong> {{ $slot->ends_at->format('d.m.Y H:i') }}</span>
-                                    <span>{{ $excursion->meeting_point }}</span>
-                                </div>
-
-                                <div>
-                                    <div class="slot-card__price">{{ number_format($slot->price_cents / 100, 0, ',', ' ') }} ₽</div>
-                                    <a href="{{ route('bookings.create', $slot) }}" class="button button--accent button-spaced-sm">Купить билет</a>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
-            </section>
-
             <section class="panel content-panel">
                 <h2>Описание экскурсии</h2>
                 <div class="content-body">{!! $excursion->full_description !!}</div>
@@ -114,14 +84,10 @@
         </main>
 
         <aside class="panel detail-sidebar">
-            <h2 class="aside-title">Выберите ближайший рейс</h2>
-            <p class="muted-copy">Выберите удобное время отправления и перейдите к оформлению билетов.</p>
+            <h2 class="aside-title">Купить билет</h2>
+            <p class="muted-copy">Выберите дату и количество участников.</p>
 
-            @if ($slots->isNotEmpty())
-                <a class="button button--primary" href="#schedule">Смотреть отправки</a>
-            @else
-                <a class="button button--ghost" href="{{ route('home') }}">Другие экскурсии</a>
-            @endif
+            @include('excursions.partials.booking-form', ['excursion' => $excursion])
         </aside>
     </div>
 </x-layouts.app>

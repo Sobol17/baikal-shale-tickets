@@ -8,6 +8,7 @@ use App\Modules\Bookings\Data\BookingStatus;
 use App\Modules\Bookings\Models\Booking;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -31,9 +32,13 @@ class BookingResource extends Resource
         return $schema->components([
             TextInput::make('uuid')->label('UUID')->disabled(),
             Select::make('status')->label('Статус')->options(BookingStatus::options())->required(),
+            Select::make('excursion_id')->label('Экскурсия')->relationship('excursion', 'title')->required(),
+            DatePicker::make('excursion_date')->label('Дата экскурсии')->required()->native(false),
             TextInput::make('customer_name')->label('Имя')->required()->maxLength(255),
             TextInput::make('customer_email')->label('Email')->email()->required()->maxLength(255),
             TextInput::make('customer_phone')->label('Телефон')->required()->maxLength(64),
+            TextInput::make('adult_tickets_count')->label('Взрослые билеты')->numeric()->required()->minValue(0),
+            TextInput::make('child_tickets_count')->label('Детские билеты')->numeric()->required()->minValue(0),
             TextInput::make('seats_count')->label('Билеты')->numeric()->required()->minValue(1),
             TextInput::make('amount_cents')->label('Сумма, коп.')->numeric()->required()->minValue(1),
         ]);
@@ -44,10 +49,12 @@ class BookingResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('uuid')->label('UUID')->searchable()->limit(8),
-                TextColumn::make('slot.excursion.title')->label('Экскурсия')->searchable(),
-                TextColumn::make('slot.starts_at')->label('Дата')->dateTime('d.m.Y H:i')->sortable(),
+                TextColumn::make('excursion.title')->label('Экскурсия')->searchable(),
+                TextColumn::make('excursion_date')->label('Дата')->date('d.m.Y')->sortable(),
                 TextColumn::make('customer_name')->label('Клиент')->searchable(),
                 TextColumn::make('customer_email')->label('Email')->searchable(),
+                TextColumn::make('adult_tickets_count')->label('Взр.')->sortable(),
+                TextColumn::make('child_tickets_count')->label('Дет.')->sortable(),
                 TextColumn::make('seats_count')->label('Билеты')->sortable(),
                 TextColumn::make('amount_cents')->label('Сумма')->money('RUB', divideBy: 100)->sortable(),
                 TextColumn::make('status')->label('Статус')->badge()->formatStateUsing(fn (BookingStatus $state): string => $state->label()),

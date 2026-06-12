@@ -4,8 +4,9 @@ namespace App\Modules\Bookings\Actions;
 
 use App\Modules\Bookings\Data\BookingStatus;
 use App\Modules\Bookings\Models\Booking;
-use App\Modules\Excursions\Data\ExcursionSlotStatus;
-use App\Modules\Excursions\Models\ExcursionSlot;
+use App\Modules\Excursions\Data\ExcursionStatus;
+use App\Modules\Excursions\Models\Excursion;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -13,31 +14,45 @@ use Illuminate\Validation\ValidationException;
 class CreateBookingAction
 {
     /**
-     * @param  array{excursion_slot_id:int, customer_name:string, customer_email:string, customer_phone:string, passengers:array<int, array<string, mixed>>, seats_count:int}  $data
+     * @param  array{excursion_id:int, excursion_date:string, customer_name:string, customer_email:string, customer_phone:string, companions:array<int, array<string, mixed>>, adult_tickets_count:int, child_tickets_count:int, seats_count:int}  $data
      */
     public function handle(array $data): Booking
     {
         return DB::transaction(function () use ($data): Booking {
-            $slot = ExcursionSlot::query()
-                ->with('excursion')
+            $excursion = Excursion::query()
                 ->lockForUpdate()
-                ->findOrFail($data['excursion_slot_id']);
+                ->findOrFail($data['excursion_id']);
 
-            if ($slot->status !== ExcursionSlotStatus::Active || $slot->starts_at->isPast()) {
+            $excursionDate = Carbon::parse($data['excursion_date'])->startOfDay();
+            $bookingStartsOn = $excursion->booking_starts_on?->startOfDay();
+            $bookingEndsOn = $excursion->booking_ends_on?->startOfDay();
+
+            if (
+                $excursion->status !== ExcursionStatus::Active
+                || $bookingStartsOn === null
+                || $bookingEndsOn === null
+                || $excursionDate->isBefore(today())
+                || $excursionDate->isBefore($bookingStartsOn)
+                || $excursionDate->isAfter($bookingEndsOn)
+            ) {
                 throw ValidationException::withMessages([
-                    'excursion_slot_id' => 'Этот слот недоступен для бронирования.',
+                    'excursion_date' => 'Эта дата недоступна для бронирования.',
                 ]);
             }
 
             return Booking::query()->create([
                 'uuid' => (string) Str::uuid(),
-                'excursion_slot_id' => $slot->id,
+                'excursion_id' => $excursion->id,
+                'excursion_date' => $excursionDate->toDateString(),
                 'customer_name' => $data['customer_name'],
                 'customer_email' => $data['customer_email'],
                 'customer_phone' => $data['customer_phone'],
-                'passengers' => $data['passengers'],
+                'adult_tickets_count' => $data['adult_tickets_count'],
+                'child_tickets_count' => $data['child_tickets_count'],
+                'companions' => $data['companions'] === [] ? null : $data['companions'],
                 'seats_count' => $data['seats_count'],
-                'amount_cents' => $slot->price_cents * $data['seats_count'],
+                'amount_cents' => ($excursion->adult_price_cents * $data['adult_tickets_count'])
+                    + ($excursion->child_price_cents * $data['child_tickets_count']),
                 'status' => BookingStatus::PendingPayment,
             ]);
         });

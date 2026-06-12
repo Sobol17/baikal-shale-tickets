@@ -5,57 +5,77 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Modules\Bookings\Actions\CreateBookingAction;
 use App\Modules\Bookings\Models\Booking;
-use App\Modules\Excursions\Data\ExcursionSlotStatus;
 use App\Modules\Excursions\Data\ExcursionStatus;
-use App\Modules\Excursions\Models\ExcursionSlot;
+use App\Modules\Excursions\Models\Excursion;
 use App\Modules\Payments\Actions\CreatePaymentAction;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 
 class BookingController extends Controller
 {
-    public function create(ExcursionSlot $slot): View
+    public function create(Request $request): View
     {
-        $slot->loadMissing('excursion');
+        $data = $request->validate([
+            'excursion_id' => ['required', 'integer', 'exists:excursions,id'],
+            'excursion_date' => ['required', 'date_format:Y-m-d'],
+            'adult_tickets_count' => ['nullable', 'integer', 'min:0', 'max:20'],
+            'child_tickets_count' => ['nullable', 'integer', 'min:0', 'max:20'],
+        ]);
+
+        $this->ensureTicketCountIsValid(
+            (int) ($data['adult_tickets_count'] ?? 1),
+            (int) ($data['child_tickets_count'] ?? 0),
+        );
+
+        $excursion = Excursion::query()->findOrFail($data['excursion_id']);
 
         abort_unless(
-            $slot->excursion->status === ExcursionStatus::Active
-            && $slot->status === ExcursionSlotStatus::Active
-            && $slot->starts_at->isFuture(),
+            $excursion->status === ExcursionStatus::Active
+            && $this->dateIsBookable($excursion, $data['excursion_date']),
             404,
         );
 
         return view('bookings.create', [
-            'slot' => $slot,
+            'excursion' => $excursion,
+            'excursionDate' => $data['excursion_date'],
+            'adultTicketsCount' => (int) ($data['adult_tickets_count'] ?? 1),
+            'childTicketsCount' => (int) ($data['child_tickets_count'] ?? 0),
         ]);
     }
 
     public function store(Request $request, CreateBookingAction $createBooking, CreatePaymentAction $createPayment): RedirectResponse
     {
-        $passengersCount = max(1, min(20, (int) $request->input('seats_count', 1)));
+        $adultTicketsCount = (int) $request->input('adult_tickets_count', 0);
+        $childTicketsCount = (int) $request->input('child_tickets_count', 0);
+        $companionsCount = max(0, ($adultTicketsCount + $childTicketsCount) - 1);
 
         $data = $request->validate([
-            'excursion_slot_id' => ['required', 'integer', 'exists:excursion_slots,id'],
-            'passengers' => ['required', 'array', 'size:'.$passengersCount],
-            'passengers.*.ticket_type' => ['required', Rule::in(['adult', 'child'])],
-            'passengers.*.last_name' => ['required', 'string', 'max:255'],
-            'passengers.*.first_name' => ['required', 'string', 'max:255'],
-            'passengers.*.middle_name' => ['nullable', 'string', 'max:255'],
-            'passengers.*.citizenship' => ['required', 'string', 'max:255'],
-            'passengers.*.phone' => ['nullable', 'string', 'max:64'],
+            'excursion_id' => ['required', 'integer', 'exists:excursions,id'],
+            'excursion_date' => ['required', 'date_format:Y-m-d'],
+            'adult_tickets_count' => ['required', 'integer', 'min:0', 'max:20'],
+            'child_tickets_count' => ['required', 'integer', 'min:0', 'max:20'],
+            'companions' => [$companionsCount > 0 ? 'required' : 'nullable', 'array', 'size:'.$companionsCount],
+            'companions.*.last_name' => ['required', 'string', 'max:255'],
+            'companions.*.first_name' => ['required', 'string', 'max:255'],
             'customer_last_name' => ['required', 'string', 'max:255'],
             'customer_first_name' => ['required', 'string', 'max:255'],
             'customer_middle_name' => ['nullable', 'string', 'max:255'],
             'customer_email' => ['required', 'email:rfc', 'max:255'],
             'customer_phone' => ['required', 'string', 'max:64'],
-            'seats_count' => ['required', 'integer', 'min:1', 'max:20'],
             'terms_accepted' => ['accepted'],
         ]);
 
+        $seatsCount = $this->ensureTicketCountIsValid(
+            (int) $data['adult_tickets_count'],
+            (int) $data['child_tickets_count'],
+        );
+
         $booking = $createBooking->handle([
-            'excursion_slot_id' => $data['excursion_slot_id'],
+            'excursion_id' => $data['excursion_id'],
+            'excursion_date' => $data['excursion_date'],
             'customer_name' => $this->fullName(
                 $data['customer_last_name'],
                 $data['customer_first_name'],
@@ -63,8 +83,10 @@ class BookingController extends Controller
             ),
             'customer_email' => $data['customer_email'],
             'customer_phone' => $data['customer_phone'],
-            'passengers' => $this->normalizePassengers($data['passengers']),
-            'seats_count' => $data['seats_count'],
+            'companions' => $this->normalizeCompanions($data['companions'] ?? []),
+            'adult_tickets_count' => (int) $data['adult_tickets_count'],
+            'child_tickets_count' => (int) $data['child_tickets_count'],
+            'seats_count' => $seatsCount,
         ]);
         $payment = $createPayment->handle($booking);
 
@@ -80,7 +102,7 @@ class BookingController extends Controller
     public function show(Booking $booking): View
     {
         return view('bookings.show', [
-            'booking' => $booking->loadMissing('slot.excursion', 'payments'),
+            'booking' => $booking->loadMissing('excursion', 'payments'),
         ]);
     }
 
@@ -92,20 +114,40 @@ class BookingController extends Controller
     }
 
     /**
-     * @param  array<int, array<string, mixed>>  $passengers
+     * @param  array<int, array<string, mixed>>  $companions
      * @return array<int, array<string, mixed>>
      */
-    private function normalizePassengers(array $passengers): array
+    private function normalizeCompanions(array $companions): array
     {
-        return collect($passengers)
-            ->map(fn (array $passenger): array => [
-                'ticket_type' => $passenger['ticket_type'],
-                'last_name' => $passenger['last_name'],
-                'first_name' => $passenger['first_name'],
-                'middle_name' => filled($passenger['middle_name'] ?? null) ? $passenger['middle_name'] : null,
-                'citizenship' => $passenger['citizenship'],
-                'phone' => $passenger['phone'] ?? null,
+        return collect($companions)
+            ->map(fn (array $companion): array => [
+                'last_name' => $companion['last_name'],
+                'first_name' => $companion['first_name'],
             ])
             ->all();
+    }
+
+    private function ensureTicketCountIsValid(int $adultTicketsCount, int $childTicketsCount): int
+    {
+        $seatsCount = $adultTicketsCount + $childTicketsCount;
+
+        if ($seatsCount < 1 || $seatsCount > 20) {
+            throw ValidationException::withMessages([
+                'adult_tickets_count' => 'Выберите от 1 до 20 билетов.',
+            ]);
+        }
+
+        return $seatsCount;
+    }
+
+    private function dateIsBookable(Excursion $excursion, string $date): bool
+    {
+        $excursionDate = Carbon::createFromFormat('Y-m-d', $date)->startOfDay();
+
+        return $excursion->booking_starts_on !== null
+            && $excursion->booking_ends_on !== null
+            && ! $excursionDate->isBefore(today())
+            && ! $excursionDate->isBefore($excursion->booking_starts_on->startOfDay())
+            && ! $excursionDate->isAfter($excursion->booking_ends_on->startOfDay());
     }
 }

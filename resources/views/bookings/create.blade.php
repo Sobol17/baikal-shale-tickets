@@ -1,14 +1,20 @@
 @php
-    $defaultPassenger = [
-        'ticket_type' => 'adult',
+    $adultTicketsCount = (int) old('adult_tickets_count', $adultTicketsCount);
+    $childTicketsCount = (int) old('child_tickets_count', $childTicketsCount);
+    $seatsCount = max(1, $adultTicketsCount + $childTicketsCount);
+    $companionsCount = max(0, $seatsCount - 1);
+    $defaultCompanions = array_fill(0, $companionsCount, [
         'last_name' => '',
         'first_name' => '',
-        'middle_name' => '',
-        'citizenship' => 'Россия',
-        'phone' => '',
-    ];
-    $initialPassengers = old('passengers', [$defaultPassenger]);
-    $initialSeats = (int) old('seats_count', max(1, count($initialPassengers)));
+    ]);
+    $initialCompanions = array_values(old('companions', $defaultCompanions));
+
+    if (count($initialCompanions) < $companionsCount) {
+        $initialCompanions = array_merge($initialCompanions, array_slice($defaultCompanions, count($initialCompanions)));
+    }
+
+    $initialCompanions = array_slice($initialCompanions, 0, $companionsCount);
+    $totalCents = ($excursion->adult_price_cents * $adultTicketsCount) + ($excursion->child_price_cents * $childTicketsCount);
 @endphp
 
 <x-layouts.app title="Оформление заказа" robots="noindex,nofollow">
@@ -17,29 +23,39 @@
         method="POST"
         action="{{ route('bookings.store') }}"
         x-data="bookingCheckout({
-            priceCents: {{ $slot->price_cents }},
-            initialSeats: {{ $initialSeats }},
-            initialPassengers: @js($initialPassengers)
+            adultPriceCents: {{ $excursion->adult_price_cents }},
+            childPriceCents: {{ $excursion->child_price_cents }},
+            adultTicketsCount: {{ $adultTicketsCount }},
+            childTicketsCount: {{ $childTicketsCount }},
+            initialCompanions: @js($initialCompanions)
         })"
     >
         @csrf
-        <input type="hidden" name="excursion_slot_id" value="{{ $slot->id }}">
+        <input type="hidden" name="excursion_id" value="{{ $excursion->id }}">
+        <input type="hidden" name="excursion_date" value="{{ $excursionDate }}">
 
         <main class="checkout-main">
             <section class="panel checkout-brief">
-                <a href="{{ route('excursions.show', $slot->excursion) }}" class="button button--ghost">Назад к расписанию</a>
-                <h1>{{ $slot->excursion->title }}</h1>
+                <a href="{{ route('excursions.show', $excursion) }}" class="button button--ghost">Назад к экскурсии</a>
+                <h1>{{ $excursion->title }}</h1>
 
                 <div class="trip-facts">
                     <div>
-                        <div class="fact-label">Отправление</div>
-                        <div class="fact-value">{{ $slot->starts_at->format('d.m.Y H:i') }}</div>
-                        <p class="field-help">{{ $slot->excursion->meeting_point }}</p>
+                        <div class="fact-label">Дата</div>
+                        <div class="fact-value">{{ \Illuminate\Support\Carbon::parse($excursionDate)->format('d.m.Y') }}</div>
+                        <p class="field-help">{{ $excursion->meeting_point }}</p>
                     </div>
                     <div>
-                        <div class="fact-label">Окончание</div>
-                        <div class="fact-value">{{ $slot->ends_at->format('d.m.Y H:i') }}</div>
-                        <p class="field-help">{{ $slot->excursion->duration_minutes }} мин.</p>
+                        <div class="fact-label">Длительность</div>
+                        <div class="fact-value">{{ $excursion->duration_minutes }} мин.</div>
+                    </div>
+                    <div>
+                        <div class="fact-label">Билеты</div>
+                        <div class="fact-value" x-text="seatsCount">{{ $seatsCount }}</div>
+                        <p class="field-help">
+                            Взрослые: <span x-text="adultTicketsCount">{{ $adultTicketsCount }}</span>,
+                            дети: <span x-text="childTicketsCount">{{ $childTicketsCount }}</span>
+                        </p>
                     </div>
                 </div>
             </section>
@@ -53,90 +69,72 @@
             <section class="panel checkout-section">
                 <div class="ticket-toolbar">
                     <div>
-                        <h2>Пассажиры</h2>
+                        <h2>Билеты</h2>
                     </div>
+                </div>
 
-                    <label class="form-field ticket-count">
-                        <span class="form-label">Билетов</span>
+                <div class="field-grid field-grid--two">
+                    <label class="form-field">
+                        <span class="form-label">Взрослые <span class="required">*</span></span>
                         <input
                             class="form-control"
                             type="number"
-                            name="seats_count"
-                            min="1"
+                            name="adult_tickets_count"
+                            min="0"
                             max="20"
                             required
-                            x-model.number="seats"
-                            x-on:input="syncPassengers()"
-                            x-on:change="syncPassengers()"
+                            x-model.number="adultTicketsCount"
+                            x-on:input="normalizeTickets()"
+                            x-on:change="normalizeTickets()"
+                        >
+                    </label>
+
+                    <label class="form-field">
+                        <span class="form-label">Дети <span class="required">*</span></span>
+                        <input
+                            class="form-control"
+                            type="number"
+                            name="child_tickets_count"
+                            min="0"
+                            max="20"
+                            required
+                            x-model.number="childTicketsCount"
+                            x-on:input="normalizeTickets()"
+                            x-on:change="normalizeTickets()"
                         >
                     </label>
                 </div>
+            </section>
 
-                <template x-for="(passenger, index) in passengers" :key="passenger.key">
-                    <article class="ticket-card">
-                        <div class="ticket-card__head">
-                            <div class="ticket-card__title" x-text="'Билет ' + (index + 1)"></div>
-                            <div class="ticket-card__price" x-text="money(priceCents)"></div>
-                        </div>
+            <section class="panel checkout-section" x-show="companionsCount > 0">
+                <div class="ticket-toolbar">
+                    <div>
+                        <h2>Кто едет с вами</h2>
+                        <p class="field-help">Укажите имя и фамилию каждого сопровождающего.</p>
+                    </div>
+                </div>
 
-                        <div class="form-field">
-                            <label class="form-label" x-bind:for="'ticket-type-' + index">Категория билета <span class="required">*</span></label>
-                            <select class="form-control" x-bind:id="'ticket-type-' + index" x-bind:name="'passengers[' + index + '][ticket_type]'" x-model="passenger.ticket_type" required>
-                                <option value="adult">взрослый</option>
-                                <option value="child">детский</option>
-                            </select>
-                        </div>
-
-                        <div class="field-grid">
-                            <label class="form-field">
-                                <span class="form-label">Фамилия <span class="required">*</span></span>
-                                <input class="form-control" x-bind:name="'passengers[' + index + '][last_name]'" x-model="passenger.last_name" placeholder="Фамилия" required>
-                            </label>
-
-                            <label class="form-field">
-                                <span class="form-label">Имя <span class="required">*</span></span>
-                                <input class="form-control" x-bind:name="'passengers[' + index + '][first_name]'" x-model="passenger.first_name" placeholder="Имя" required>
-                            </label>
-
-                            <div class="form-field">
-                                <label class="form-label" x-bind:for="'middle-name-' + index">Отчество</label>
-                                <input
-                                    class="form-control"
-                                    x-bind:id="'middle-name-' + index"
-                                    x-bind:name="'passengers[' + index + '][middle_name]'"
-                                    x-model="passenger.middle_name"
-                                    placeholder="Отчество"
-                                >
+                <div class="companion-list">
+                    <template x-for="(companion, index) in companions" :key="companion.key">
+                        <article class="ticket-card">
+                            <div class="ticket-card__head">
+                                <div class="ticket-card__title" x-text="'Участник ' + (index + 2)"></div>
                             </div>
-                        </div>
 
-                        <div class="field-grid field-grid--two">
-                            <label class="form-field">
-                                <span class="form-label">Гражданство <span class="required">*</span></span>
-                                <select class="form-control" x-bind:name="'passengers[' + index + '][citizenship]'" x-model="passenger.citizenship" required>
-                                    <option value="Россия">Россия</option>
-                                    <option value="Казахстан">Казахстан</option>
-                                    <option value="Беларусь">Беларусь</option>
-                                    <option value="Монголия">Монголия</option>
-                                    <option value="Другое">Другое</option>
-                                </select>
-                            </label>
+                            <div class="field-grid field-grid--two">
+                                <label class="form-field">
+                                    <span class="form-label">Фамилия <span class="required">*</span></span>
+                                    <input class="form-control" x-bind:name="'companions[' + index + '][last_name]'" x-model="companion.last_name" placeholder="Фамилия" required>
+                                </label>
 
-                            <label class="form-field">
-                                <span class="form-label">Телефон</span>
-                                <input
-                                    class="form-control"
-                                    type="tel"
-                                    inputmode="tel"
-                                    x-bind:name="'passengers[' + index + '][phone]'"
-                                    x-model="passenger.phone"
-                                    x-on:input="passenger.phone = formatPhoneNumber($event.target.value); $event.target.value = passenger.phone"
-                                    placeholder="+7 912 345-67-89"
-                                >
-                            </label>
-                        </div>
-                    </article>
-                </template>
+                                <label class="form-field">
+                                    <span class="form-label">Имя <span class="required">*</span></span>
+                                    <input class="form-control" x-bind:name="'companions[' + index + '][first_name]'" x-model="companion.first_name" placeholder="Имя" required>
+                                </label>
+                            </div>
+                        </article>
+                    </template>
+                </div>
             </section>
 
             <section class="panel checkout-section">
@@ -180,7 +178,7 @@
                             placeholder="+7 912 345-67-89"
                             required
                         >
-                        <p class="field-help">Укажите номер, чтобы мы могли связаться с вами при переносе или отмене рейса.</p>
+                        <p class="field-help">Укажите номер, чтобы мы могли связаться с вами при переносе или отмене экскурсии.</p>
                     </div>
                 </div>
             </section>
@@ -190,20 +188,20 @@
             <div class="checkout-summary__body">
                 <h2>Заказ</h2>
                 <div class="summary-line">
-                    <span>Билеты, <span x-text="seats"></span> шт.</span>
-                    <strong x-text="money(totalCents)"></strong>
+                    <span>Взрослые билеты, <span x-text="adultTicketsCount">{{ $adultTicketsCount }}</span> шт.</span>
+                    <strong x-text="money(adultTotalCents)">{{ number_format(($excursion->adult_price_cents * $adultTicketsCount) / 100, 0, ',', ' ') }} ₽</strong>
+                </div>
+                <div class="summary-line">
+                    <span>Детские билеты, <span x-text="childTicketsCount">{{ $childTicketsCount }}</span> шт.</span>
+                    <strong x-text="money(childTotalCents)">{{ number_format(($excursion->child_price_cents * $childTicketsCount) / 100, 0, ',', ' ') }} ₽</strong>
                 </div>
                 <div class="summary-line summary-line--muted">
                     <span>Сервисный сбор</span>
                     <strong>0 ₽</strong>
                 </div>
-                <div class="summary-line summary-line--muted">
-                    <span>Скидка</span>
-                    <strong>- 0 ₽</strong>
-                </div>
                 <div class="summary-line summary-total">
                     <span>Итого</span>
-                    <strong x-text="money(totalCents)"></strong>
+                    <strong x-text="money(totalCents)">{{ number_format($totalCents / 100, 0, ',', ' ') }} ₽</strong>
                 </div>
             </div>
 
@@ -216,7 +214,7 @@
                 </label>
 
                 <p class="legal-copy">
-                    Нажимая на кнопку, вы подтверждаете корректность данных пассажиров и покупателя.
+                    Нажимая на кнопку, вы подтверждаете корректность данных покупателя и сопровождающих.
                 </p>
             </div>
         </aside>

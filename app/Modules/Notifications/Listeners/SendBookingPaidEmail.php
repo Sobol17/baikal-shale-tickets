@@ -11,7 +11,7 @@ class SendBookingPaidEmail implements ShouldQueue
 {
     public function handle(BookingPaid $event): void
     {
-        $booking = $event->booking->loadMissing('slot.excursion');
+        $booking = $event->booking->loadMissing('excursion');
 
         Mail::to($booking->customer_email)->send(new BookingPaidMail($booking));
     }

@@ -8,7 +8,7 @@
             @endif
 
             <p class="kicker">Бронирование {{ $booking->uuid }}</p>
-            <h1 class="section-title">{{ $booking->slot->excursion->title }}</h1>
+            <h1 class="section-title">{{ $booking->excursion->title }}</h1>
             <dl class="trip-facts">
                 <div>
                     <dt class="fact-label">Статус</dt>
@@ -16,10 +16,18 @@
                 </div>
                 <div>
                     <dt class="fact-label">Дата</dt>
-                    <dd class="fact-value">{{ $booking->slot->starts_at->format('d.m.Y H:i') }}</dd>
+                    <dd class="fact-value">{{ $booking->excursion_date->format('d.m.Y') }}</dd>
                 </div>
                 <div>
-                    <dt class="fact-label">Билеты</dt>
+                    <dt class="fact-label">Взрослые</dt>
+                    <dd class="fact-value">{{ $booking->adult_tickets_count }}</dd>
+                </div>
+                <div>
+                    <dt class="fact-label">Дети</dt>
+                    <dd class="fact-value">{{ $booking->child_tickets_count }}</dd>
+                </div>
+                <div>
+                    <dt class="fact-label">Всего билетов</dt>
                     <dd class="fact-value">{{ $booking->seats_count }}</dd>
                 </div>
                 <div>
@@ -28,17 +36,15 @@
                 </div>
             </dl>
 
-            @if ($booking->passengers)
+            @if ($booking->companions)
                 <section class="passenger-list">
-                    <h2>Пассажиры</h2>
-                    <div class="slot-list">
-                        @foreach ($booking->passengers as $passenger)
-                            <div class="slot-card booking-passenger-card">
+                    <h2>Сопровождающие</h2>
+                    <div class="booking-person-list">
+                        @foreach ($booking->companions as $companion)
+                            <div class="booking-person-card">
                                 <div>
-                                    <strong>{{ $passenger['last_name'] }} {{ $passenger['first_name'] }} {{ $passenger['middle_name'] ?? '' }}</strong>
-                                    <div class="passenger-muted">{{ $passenger['citizenship'] ?? 'Россия' }}</div>
+                                    <strong>{{ $companion['last_name'] }} {{ $companion['first_name'] }}</strong>
                                 </div>
-                                <span class="meta-pill">{{ ($passenger['ticket_type'] ?? 'adult') === 'child' ? 'детский' : 'взрослый' }}</span>
                             </div>
                         @endforeach
                     </div>

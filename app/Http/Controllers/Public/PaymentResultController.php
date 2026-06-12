@@ -33,7 +33,7 @@ class PaymentResultController extends Controller
 
         return Booking::query()
             ->where('uuid', $uuid)
-            ->with('slot.excursion')
+            ->with('excursion')
             ->first();
     }
 }

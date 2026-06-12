@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Excursions\Actions\ListActiveExcursionsAction;
-use App\Modules\Excursions\Actions\ListAvailableSlotsAction;
 use App\Modules\Excursions\Data\ExcursionStatus;
 use App\Modules\Excursions\Models\Excursion;
 use Illuminate\Contracts\View\View;
@@ -29,8 +28,7 @@ class ExcursionController extends Controller
                 'title' => $excursion->title,
                 'description' => $excursion->short_description,
                 'duration' => "{$excursion->duration_minutes} мин.",
-                'price' => 'от '.number_format($excursion->base_price_cents / 100, 0, ',', ' ').' ₽',
-                'nextSlot' => $excursion->slots->first()?->starts_at?->format('d.m H:i'),
+                'price' => 'от '.number_format($excursion->adult_price_cents / 100, 0, ',', ' ').' ₽',
                 'image' => $excursion->cover_image_url,
                 'url' => route('excursions.show', $excursion),
             ])
@@ -41,13 +39,12 @@ class ExcursionController extends Controller
         ]);
     }
 
-    public function show(Excursion $excursion, ListAvailableSlotsAction $listSlots): View
+    public function show(Excursion $excursion): View
     {
         abort_unless($excursion->status === ExcursionStatus::Active, 404);
 
         return view('excursions.show', [
             'excursion' => $excursion,
-            'slots' => $listSlots->handle($excursion),
         ]);
     }
 }

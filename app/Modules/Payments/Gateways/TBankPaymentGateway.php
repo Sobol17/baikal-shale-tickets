@@ -15,10 +15,34 @@ class TBankPaymentGateway implements PaymentGateway
 
     public function initialize(Payment $payment): PaymentInitializationResult
     {
-        $payment->loadMissing('booking.slot.excursion');
+        $payment->loadMissing('booking.excursion');
         $booking = $payment->booking;
-        $slot = $booking->slot;
-        $excursion = $slot->excursion;
+        $excursion = $booking->excursion;
+        $items = [];
+
+        if ($booking->adult_tickets_count > 0) {
+            $items[] = [
+                'Name' => str($excursion->title.' - взрослый билет')->limit(128, '')->toString(),
+                'Price' => $excursion->adult_price_cents,
+                'Quantity' => $booking->adult_tickets_count,
+                'Amount' => $excursion->adult_price_cents * $booking->adult_tickets_count,
+                'Tax' => config('services.tbank.tax'),
+                'PaymentMethod' => config('services.tbank.payment_method'),
+                'PaymentObject' => config('services.tbank.payment_object'),
+            ];
+        }
+
+        if ($booking->child_tickets_count > 0) {
+            $items[] = [
+                'Name' => str($excursion->title.' - детский билет')->limit(128, '')->toString(),
+                'Price' => $excursion->child_price_cents,
+                'Quantity' => $booking->child_tickets_count,
+                'Amount' => $excursion->child_price_cents * $booking->child_tickets_count,
+                'Tax' => config('services.tbank.tax'),
+                'PaymentMethod' => config('services.tbank.payment_method'),
+                'PaymentObject' => config('services.tbank.payment_object'),
+            ];
+        }
 
         $payload = [
             'TerminalKey' => config('services.tbank.terminal_key'),
@@ -34,15 +58,7 @@ class TBankPaymentGateway implements PaymentGateway
                 'Email' => $booking->customer_email,
                 'Phone' => $booking->customer_phone,
                 'Taxation' => config('services.tbank.taxation'),
-                'Items' => [[
-                    'Name' => str($excursion->title)->limit(128, '')->toString(),
-                    'Price' => $slot->price_cents,
-                    'Quantity' => $booking->seats_count,
-                    'Amount' => $payment->amount_cents,
-                    'Tax' => config('services.tbank.tax'),
-                    'PaymentMethod' => config('services.tbank.payment_method'),
-                    'PaymentObject' => config('services.tbank.payment_object'),
-                ]],
+                'Items' => $items,
             ],
         ];
         $payload['Token'] = $this->tokens->make($payload, (string) config('services.tbank.password'));

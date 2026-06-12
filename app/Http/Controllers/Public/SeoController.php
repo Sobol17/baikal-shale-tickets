@@ -16,7 +16,6 @@ class SeoController extends Controller
             'User-agent: *',
             'Allow: /',
             'Disallow: /admin',
-            'Disallow: /slots',
             'Disallow: /bookings',
             'Disallow: /payment',
             'Disallow: /payments',

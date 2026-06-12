@@ -118,9 +118,6 @@
                                             <span class="search-result__meta">
                                                 <span x-text="item.duration"></span>
                                                 <span x-text="item.price"></span>
-                                                <template x-if="item.nextSlot">
-                                                    <span x-text="'ближайшая ' + item.nextSlot"></span>
-                                                </template>
                                             </span>
                                         </span>
 

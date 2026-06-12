@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Modules\Bookings\Data\BookingStatus;
 use App\Modules\Bookings\Models\Booking;
-use App\Modules\Excursions\Models\ExcursionSlot;
+use App\Modules\Excursions\Models\Excursion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -19,20 +19,14 @@ class BookingFactory extends Factory
     {
         return [
             'uuid' => (string) Str::uuid(),
-            'excursion_slot_id' => ExcursionSlot::factory(),
+            'excursion_id' => Excursion::factory(),
+            'excursion_date' => now()->addWeek()->toDateString(),
             'customer_name' => fake()->name(),
             'customer_email' => fake()->safeEmail(),
             'customer_phone' => fake()->phoneNumber(),
-            'passengers' => [
-                [
-                    'ticket_type' => 'adult',
-                    'last_name' => fake()->lastName(),
-                    'first_name' => fake()->firstName(),
-                    'middle_name' => null,
-                    'citizenship' => 'Россия',
-                    'phone' => fake()->phoneNumber(),
-                ],
-            ],
+            'adult_tickets_count' => 1,
+            'child_tickets_count' => 0,
+            'companions' => null,
             'seats_count' => 1,
             'amount_cents' => 200000,
             'status' => BookingStatus::PendingPayment,

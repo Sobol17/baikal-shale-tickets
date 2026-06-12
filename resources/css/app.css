@@ -534,7 +534,7 @@ textarea {
     display: grid;
     grid-template-rows: auto 1fr;
     min-height: 100%;
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid var(--line);
     border-radius: var(--radius);
     background: var(--paper);
@@ -543,36 +543,56 @@ textarea {
 
 .excursion-card__image {
     width: 100%;
-    height: clamp(180px, 18vw, 230px);
+    height: clamp(132px, 13vw, 168px);
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
     object-fit: cover;
+}
+
+.excursion-card__media-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
 }
 
 .excursion-card__fallback {
     display: grid;
-    height: clamp(180px, 18vw, 230px);
+    height: clamp(132px, 13vw, 168px);
     place-items: center;
     border-bottom: 1px solid var(--line);
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
     background: rgba(255, 255, 255, 0.28);
 }
 
 .excursion-card__fallback-logo {
-    width: 88px;
-    height: 88px;
+    width: 68px;
+    height: 68px;
     object-fit: contain;
 }
 
 .excursion-card__body {
     display: grid;
     grid-template-rows: 1fr auto auto;
-    gap: 16px;
-    padding: 18px;
+    gap: 12px;
+    padding: 16px;
 }
 
 .excursion-card h3 {
     margin: 0;
     color: var(--brand);
-    font-size: 20px;
+    font-size: 19px;
     line-height: 1.2;
+}
+
+.excursion-card h3 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.excursion-card h3 a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
 
 .excursion-card p {
@@ -597,6 +617,131 @@ textarea {
 .meta-pill:last-child {
     border-right: 0;
     padding-right: 0;
+}
+
+.purchase-form {
+    position: relative;
+    display: grid;
+    gap: 10px;
+}
+
+.purchase-date {
+    position: relative;
+}
+
+.purchase-date__button {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    cursor: pointer;
+}
+
+.purchase-date__button::after {
+    content: '';
+    display: block;
+    width: 9px;
+    height: 9px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translateY(-2px);
+}
+
+.calendar-popover {
+    position: absolute;
+    z-index: 60;
+    top: calc(100% + 8px);
+    right: 0;
+    left: 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--white);
+    box-shadow: var(--shadow);
+    padding: 12px;
+}
+
+.calendar-popover__head {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.calendar-popover__head strong {
+    text-align: center;
+    color: var(--brand);
+}
+
+.calendar-popover__head button {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--brand);
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 7px 9px;
+}
+
+.calendar-popover__head button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+}
+
+.calendar-grid--weekdays {
+    margin-bottom: 5px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 650;
+    text-align: center;
+}
+
+.calendar-day {
+    display: grid;
+    min-height: 34px;
+    place-items: center;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.calendar-day:hover:not(:disabled),
+.calendar-day.is-selected {
+    border-color: var(--brand);
+    background: rgba(75, 46, 30, 0.08);
+    color: var(--brand);
+}
+
+.calendar-day:disabled {
+    cursor: not-allowed;
+    color: rgba(75, 46, 30, 0.32);
+}
+
+.calendar-day.is-empty {
+    visibility: hidden;
+}
+
+.purchase-form__prices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 650;
 }
 
 .empty-state,
@@ -700,6 +845,21 @@ textarea {
 .slot-card__price {
     color: var(--ink);
     font-weight: 760;
+}
+
+.booking-person-list,
+.companion-list {
+    display: grid;
+    gap: 10px;
+}
+
+.booking-person-card {
+    display: grid;
+    gap: 8px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--white);
+    padding: 16px;
 }
 
 .content-panel {
@@ -1280,7 +1440,7 @@ textarea {
 
     .excursion-card__image,
     .excursion-card__fallback {
-        height: 190px;
+        height: 150px;
     }
 
     .slot-card {

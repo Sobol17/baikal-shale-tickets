@@ -14,7 +14,6 @@ class ListActiveExcursionsAction
     {
         return Excursion::query()
             ->active()
-            ->with(['slots' => fn ($query) => $query->available()->orderBy('starts_at')])
             ->when($search, fn ($query) => $query->where(function ($query) use ($search): void {
                 $query
                     ->whereLike('title', "%{$search}%")

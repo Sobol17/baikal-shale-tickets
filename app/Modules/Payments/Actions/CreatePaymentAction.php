@@ -30,7 +30,7 @@ class CreatePaymentAction
         ]);
 
         try {
-            $result = $this->gateway->initialize($payment->loadMissing('booking.slot.excursion'));
+            $result = $this->gateway->initialize($payment->loadMissing('booking.excursion'));
         } catch (Throwable $exception) {
             report($exception);
 

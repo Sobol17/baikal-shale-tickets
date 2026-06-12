@@ -1,6 +1,5 @@
 <?php
 
-use App\Modules\Excursions\Data\ExcursionSlotStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +15,7 @@ return new class extends Migration
             $table->dateTime('ends_at');
             $table->unsignedInteger('capacity');
             $table->unsignedInteger('price_cents');
-            $table->string('status')->default(ExcursionSlotStatus::Draft->value)->index();
+            $table->string('status')->default('draft')->index();
             $table->timestamps();
         });
     }

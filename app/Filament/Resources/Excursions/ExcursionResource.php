@@ -11,6 +11,7 @@ use App\Modules\Excursions\Models\Excursion;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -39,7 +40,24 @@ class ExcursionResource extends Resource
             Select::make('season')->label('Сезон')->options(ExcursionSeason::options())->required(),
             Select::make('status')->label('Статус')->options(ExcursionStatus::options())->required(),
             TextInput::make('duration_minutes')->label('Длительность, минут')->numeric()->required()->minValue(1),
-            TextInput::make('base_price_cents')->label('Базовая цена, коп.')->numeric()->required()->minValue(1),
+            TextInput::make('adult_price_cents')
+                ->label('Взрослая цена, ₽')
+                ->numeric()
+                ->required()
+                ->minValue(1)
+                ->suffix('₽')
+                ->formatStateUsing(fn (?int $state): ?string => $state === null ? null : (string) ($state / 100))
+                ->dehydrateStateUsing(fn (mixed $state): int => (int) round(((float) str_replace(',', '.', (string) $state)) * 100)),
+            TextInput::make('child_price_cents')
+                ->label('Детская цена, ₽')
+                ->numeric()
+                ->required()
+                ->minValue(1)
+                ->suffix('₽')
+                ->formatStateUsing(fn (?int $state): ?string => $state === null ? null : (string) ($state / 100))
+                ->dehydrateStateUsing(fn (mixed $state): int => (int) round(((float) str_replace(',', '.', (string) $state)) * 100)),
+            DatePicker::make('booking_starts_on')->label('Бронирование с')->required()->native(false),
+            DatePicker::make('booking_ends_on')->label('Бронирование по')->required()->native(false),
             TextInput::make('meeting_point')->label('Место встречи')->required()->maxLength(255),
             FileUpload::make('cover_image')
                 ->label('Обложка')
@@ -67,7 +85,10 @@ class ExcursionResource extends Resource
                 TextColumn::make('title')->label('Название')->searchable()->sortable(),
                 TextColumn::make('season')->label('Сезон')->badge()->formatStateUsing(fn (ExcursionSeason $state): string => $state->label()),
                 TextColumn::make('status')->label('Статус')->badge()->formatStateUsing(fn (ExcursionStatus $state): string => $state->label()),
-                TextColumn::make('base_price_cents')->label('Цена')->money('RUB', divideBy: 100)->sortable(),
+                TextColumn::make('adult_price_cents')->label('Взрослая цена')->money('RUB', divideBy: 100)->sortable(),
+                TextColumn::make('child_price_cents')->label('Детская цена')->money('RUB', divideBy: 100)->sortable(),
+                TextColumn::make('booking_starts_on')->label('Даты с')->date('d.m.Y')->sortable(),
+                TextColumn::make('booking_ends_on')->label('Даты по')->date('d.m.Y')->sortable(),
                 TextColumn::make('duration_minutes')->label('Мин.')->sortable(),
                 TextColumn::make('updated_at')->label('Обновлено')->dateTime('d.m.Y H:i')->sortable(),
             ])

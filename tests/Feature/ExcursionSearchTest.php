@@ -7,7 +7,7 @@ it('returns active excursions for header search', function (): void {
     $matched = Excursion::factory()->create([
         'title' => 'Кругобайкальская железная дорога',
         'short_description' => 'Поездка вдоль Байкала',
-        'base_price_cents' => 302000,
+        'adult_price_cents' => 302000,
         'status' => ExcursionStatus::Active,
     ]);
 

@@ -1,10 +1,8 @@
 <?php
 
 use App\Modules\Bookings\Models\Booking;
-use App\Modules\Excursions\Data\ExcursionSlotStatus;
 use App\Modules\Excursions\Data\ExcursionStatus;
 use App\Modules\Excursions\Models\Excursion;
-use App\Modules\Excursions\Models\ExcursionSlot;
 
 it('renders homepage seo metadata and structured data', function (): void {
     $activeExcursion = Excursion::factory()->create([
@@ -21,7 +19,7 @@ it('renders homepage seo metadata and structured data', function (): void {
     $this->get(route('home'))
         ->assertOk()
         ->assertSee('<title>Экскурсии Байкал Шале</title>', false)
-        ->assertSee('<meta name="description" content="Экскурсии Байкал Шале: маршруты по Байкалу, ближайшие отправки и бронирование билетов без регистрации.">', false)
+        ->assertSee('<meta name="description" content="Экскурсии Байкал Шале: маршруты по Байкалу, выбор даты и бронирование билетов без регистрации.">', false)
         ->assertSee('<link rel="canonical" href="'.route('home', absolute: true).'">', false)
         ->assertSee('<meta property="og:type" content="website">', false)
         ->assertSee('"@type":"WebSite"', false)
@@ -36,15 +34,10 @@ it('renders excursion seo metadata and tourist trip structured data', function (
         'short_description' => 'Водная экскурсия по Байкалу из Листвянки до Больших Котов.',
         'duration_minutes' => 120,
         'meeting_point' => 'Причал Листвянка',
-        'base_price_cents' => 150000,
+        'adult_price_cents' => 150000,
+        'child_price_cents' => 110000,
+        'booking_ends_on' => today()->addMonth()->toDateString(),
         'status' => ExcursionStatus::Active,
-    ]);
-    ExcursionSlot::factory()->create([
-        'excursion_id' => $excursion->id,
-        'starts_at' => now()->addDay()->setTime(10, 0),
-        'ends_at' => now()->addDay()->setTime(12, 0),
-        'price_cents' => 110000,
-        'status' => ExcursionSlotStatus::Active,
     ]);
 
     $this->get(route('excursions.show', $excursion))
@@ -55,7 +48,7 @@ it('renders excursion seo metadata and tourist trip structured data', function (
         ->assertSee('<meta property="og:type" content="product">', false)
         ->assertSee('"@type":"TouristTrip"', false)
         ->assertSee('"@type":"Offer"', false)
-        ->assertSee('"price":"1100.00"', false)
+        ->assertSee('"price":"1500.00"', false)
         ->assertSee('"duration":"PT120M"', false)
         ->assertSee('Причал Листвянка');
 });
@@ -64,17 +57,17 @@ it('marks checkout booking and payment pages as noindex', function (): void {
     $excursion = Excursion::factory()->create([
         'status' => ExcursionStatus::Active,
     ]);
-    $slot = ExcursionSlot::factory()->create([
-        'excursion_id' => $excursion->id,
-        'starts_at' => now()->addDay(),
-        'ends_at' => now()->addDay()->addHours(2),
-        'status' => ExcursionSlotStatus::Active,
-    ]);
     $booking = Booking::factory()->create([
-        'excursion_slot_id' => $slot->id,
+        'excursion_id' => $excursion->id,
+        'excursion_date' => today()->addDay()->toDateString(),
     ]);
 
-    $this->get(route('bookings.create', $slot))
+    $this->get(route('bookings.create', [
+        'excursion_id' => $excursion->id,
+        'excursion_date' => today()->addDay()->toDateString(),
+        'adult_tickets_count' => 1,
+        'child_tickets_count' => 0,
+    ]))
         ->assertOk()
         ->assertSee('<meta name="robots" content="noindex,nofollow">', false);
 
@@ -121,7 +114,6 @@ it('renders robots txt with closed service paths and sitemap link', function ():
         ->assertSee('User-agent: *')
         ->assertSee('Allow: /')
         ->assertSee('Disallow: /admin')
-        ->assertSee('Disallow: /slots')
         ->assertSee('Disallow: /bookings')
         ->assertSee('Disallow: /payment')
         ->assertSee('Disallow: /payments')

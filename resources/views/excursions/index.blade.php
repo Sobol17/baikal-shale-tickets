@@ -1,7 +1,7 @@
 @php
     $excursions = $excursionsBySeason->flatten(1)->values();
     $homeUrl = route('home', absolute: true);
-    $description = 'Экскурсии Байкал Шале: маршруты по Байкалу, ближайшие отправки и бронирование билетов без регистрации.';
+    $description = 'Экскурсии Байкал Шале: маршруты по Байкалу, выбор даты и бронирование билетов без регистрации.';
     $structuredData = [
         [
             '@context' => 'https://schema.org',
@@ -60,7 +60,7 @@
         <div class="app-container catalog-intro__grid">
             <div>
                 <h1 class="page-title">Экскурсии Байкал Шале</h1>
-                <p class="lead">Выберите маршрут, ближайшую отправку и оформите билеты без регистрации.</p>
+                <p class="lead">Выберите маршрут, дату экскурсии и оформите билеты без регистрации.</p>
             </div>
         </div>
     </section>
@@ -91,32 +91,36 @@
 
                 <div class="excursion-grid">
                     @foreach ($seasonExcursions as $excursion)
-                        @php($nextSlot = $excursion->slots->first())
-
                         <article class="excursion-card">
                             @if ($excursion->cover_image_url)
-                                <img class="excursion-card__image" src="{{ $excursion->cover_image_url }}" alt="{{ $excursion->title }}">
+                                <a class="excursion-card__media-link" href="{{ route('excursions.show', $excursion) }}" aria-label="{{ $excursion->title }}">
+                                    <img class="excursion-card__image" src="{{ $excursion->cover_image_url }}" alt="{{ $excursion->title }}">
+                                </a>
                             @else
-                                <div class="excursion-card__fallback" aria-hidden="true">
-                                    <img class="excursion-card__fallback-logo" src="{{ asset('images/logo.webp') }}" alt="">
-                                </div>
+                                <a class="excursion-card__media-link" href="{{ route('excursions.show', $excursion) }}" aria-label="{{ $excursion->title }}">
+                                    <div class="excursion-card__fallback" aria-hidden="true">
+                                        <img class="excursion-card__fallback-logo" src="{{ asset('images/logo.webp') }}" alt="">
+                                    </div>
+                                </a>
                             @endif
 
                             <div class="excursion-card__body">
                                 <div>
-                                    <h3>{{ $excursion->title }}</h3>
+                                    <h3>
+                                        <a href="{{ route('excursions.show', $excursion) }}">{{ $excursion->title }}</a>
+                                    </h3>
                                     <p>{{ $excursion->short_description }}</p>
                                 </div>
 
                                 <div class="meta-row">
                                     <span class="meta-pill">{{ $excursion->duration_minutes }} мин.</span>
-                                    <span class="meta-pill">от {{ number_format($excursion->base_price_cents / 100, 0, ',', ' ') }} ₽</span>
-                                    @if ($nextSlot)
-                                        <span class="meta-pill">ближайшая {{ $nextSlot->starts_at->format('d.m H:i') }}</span>
-                                    @endif
+                                    <span class="meta-pill">взрослый {{ number_format($excursion->adult_price_cents / 100, 0, ',', ' ') }} ₽</span>
+                                    <span class="meta-pill">детский {{ number_format($excursion->child_price_cents / 100, 0, ',', ' ') }} ₽</span>
                                 </div>
 
-                                <a href="{{ route('excursions.show', $excursion) }}" class="button button--primary">Купить билет</a>
+                                @include('excursions.partials.booking-form', ['excursion' => $excursion])
+
+                                <a href="{{ route('excursions.show', $excursion) }}" class="button button--ghost">Подробнее</a>
                             </div>
                         </article>
                     @endforeach

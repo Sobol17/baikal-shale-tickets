@@ -29,24 +29,24 @@ class DatabaseSeeder extends Seeder
                 'season' => ExcursionSeason::SummerAutumn,
                 'description' => 'Водный маршрут по Байкалу с удобной посадкой в Листвянке и прибытием в Большие Коты.',
                 'duration' => 30,
-                'price' => 110000,
-                'time' => [10, 0],
+                'adult_price' => 110000,
+                'child_price' => 80000,
             ],
             [
                 'title' => 'Прогулка к обзорным точкам Листвянки',
                 'season' => ExcursionSeason::SummerAutumn,
                 'description' => 'Неспешная прогулка с гидом, видами на Байкал и организацией в темпе семейного отдыха.',
                 'duration' => 120,
-                'price' => 200000,
-                'time' => [14, 0],
+                'adult_price' => 200000,
+                'child_price' => 150000,
             ],
             [
                 'title' => 'Зимний Байкал и ледовые панорамы',
                 'season' => ExcursionSeason::WinterSpring,
                 'description' => 'Зимняя экскурсия по живописным точкам побережья Байкала с остановками для фотографий.',
                 'duration' => 180,
-                'price' => 300000,
-                'time' => [11, 0],
+                'adult_price' => 300000,
+                'child_price' => 220000,
             ],
         ];
 
@@ -62,26 +62,13 @@ class DatabaseSeeder extends Seeder
                     'meeting_point' => 'Байкал Шале, Листвянка',
                     'rules' => 'Рекомендуется удобная обувь и одежда по погоде. Приходите за 10 минут до начала.',
                     'cover_image' => null,
-                    'base_price_cents' => $item['price'],
+                    'adult_price_cents' => $item['adult_price'],
+                    'child_price_cents' => $item['child_price'],
+                    'booking_starts_on' => now()->toDateString(),
+                    'booking_ends_on' => now()->addMonths(6)->toDateString(),
                     'status' => ExcursionStatus::Active,
                 ],
             );
-
-            if ($excursion->slots()->count() > 0) {
-                continue;
-            }
-
-            for ($day = 1; $day <= 5; $day++) {
-                $startsAt = now()->addDays($day * 2)->setTime($item['time'][0], $item['time'][1]);
-
-                $excursion->slots()->create([
-                    'starts_at' => $startsAt,
-                    'ends_at' => $startsAt->copy()->addMinutes($item['duration']),
-                    'capacity' => 999,
-                    'price_cents' => $item['price'],
-                    'status' => 'active',
-                ]);
-            }
         }
     }
 }

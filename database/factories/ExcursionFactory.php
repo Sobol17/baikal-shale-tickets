@@ -29,7 +29,10 @@ class ExcursionFactory extends Factory
             'meeting_point' => fake()->address(),
             'rules' => fake()->paragraph(),
             'cover_image' => null,
-            'base_price_cents' => fake()->randomElement([150000, 200000, 250000, 300000]),
+            'adult_price_cents' => fake()->randomElement([150000, 200000, 250000, 300000]),
+            'child_price_cents' => fake()->randomElement([100000, 150000, 200000]),
+            'booking_starts_on' => now()->toDateString(),
+            'booking_ends_on' => now()->addMonths(6)->toDateString(),
             'status' => ExcursionStatus::Active,
         ];
     }
