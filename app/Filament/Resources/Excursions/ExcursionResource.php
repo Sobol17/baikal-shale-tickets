@@ -69,13 +69,12 @@ class ExcursionResource extends Resource
             TextInput::make('meeting_point')->label('Место встречи')->required()->maxLength(255),
             FileUpload::make('cover_image')
                 ->label('Обложка')
-                ->helperText('Загрузите изображение в пропорции 16:9. Подойдут размеры 1280x720, 1600x900, 1920x1080.')
+                ->helperText('Загрузите изображение для обложки экскурсии.')
                 ->image()
                 ->disk('public')
                 ->directory('excursions/covers')
                 ->visibility('public')
                 ->imagePreviewHeight('180')
-                ->imageAspectRatio('16:9')
                 ->openable()
                 ->downloadable()
                 ->columnSpanFull(),
