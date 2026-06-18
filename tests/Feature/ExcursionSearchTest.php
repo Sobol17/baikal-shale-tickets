@@ -7,6 +7,7 @@ it('returns active excursions for header search', function (): void {
     $matched = Excursion::factory()->create([
         'title' => 'Кругобайкальская железная дорога',
         'short_description' => 'Поездка вдоль Байкала',
+        'duration_minutes' => 90,
         'adult_price_cents' => 302000,
         'status' => ExcursionStatus::Active,
     ]);
@@ -25,6 +26,7 @@ it('returns active excursions for header search', function (): void {
         ->assertOk()
         ->assertJsonCount(1, 'items')
         ->assertJsonPath('items.0.title', $matched->title)
+        ->assertJsonPath('items.0.duration', '1,5 часа')
         ->assertJsonPath('items.0.price', 'от 3 020 ₽')
         ->assertJsonPath('items.0.url', route('excursions.show', $matched));
 });

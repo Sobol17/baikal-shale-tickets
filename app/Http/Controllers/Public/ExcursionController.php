@@ -27,7 +27,7 @@ class ExcursionController extends Controller
             ->map(fn (Excursion $excursion): array => [
                 'title' => $excursion->title,
                 'description' => $excursion->short_description,
-                'duration' => "{$excursion->duration_minutes} мин.",
+                'duration' => $excursion->duration_hours_label,
                 'price' => 'от '.number_format($excursion->adult_price_cents / 100, 0, ',', ' ').' ₽',
                 'image' => $excursion->cover_image_url,
                 'url' => route('excursions.show', $excursion),

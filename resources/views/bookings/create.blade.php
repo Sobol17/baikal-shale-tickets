@@ -47,7 +47,7 @@
                     </div>
                     <div>
                         <div class="fact-label">Длительность</div>
-                        <div class="fact-value">{{ $excursion->duration_minutes }} мин.</div>
+                        <div class="fact-value">{{ $excursion->duration_hours_label }}</div>
                     </div>
                     <div>
                         <div class="fact-label">Билеты</div>

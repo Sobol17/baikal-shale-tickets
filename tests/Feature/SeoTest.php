@@ -50,6 +50,7 @@ it('renders excursion seo metadata and tourist trip structured data', function (
         ->assertSee('"@type":"Offer"', false)
         ->assertSee('"price":"1500.00"', false)
         ->assertSee('"duration":"PT120M"', false)
+        ->assertSee('2 часа')
         ->assertSee('Причал Листвянка');
 });
 

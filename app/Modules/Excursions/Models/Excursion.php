@@ -61,6 +61,16 @@ class Excursion extends Model
         });
     }
 
+    protected function durationHoursLabel(): Attribute
+    {
+        return Attribute::get(function (): string {
+            $hours = $this->duration_minutes / 60;
+            $formattedHours = str_replace('.', ',', (string) round($hours, 2));
+
+            return $formattedHours.' '.$this->durationHoursUnit($hours);
+        });
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', ExcursionStatus::Active->value);
@@ -69,5 +79,25 @@ class Excursion extends Model
     protected static function newFactory(): ExcursionFactory
     {
         return ExcursionFactory::new();
+    }
+
+    private function durationHoursUnit(float $hours): string
+    {
+        if (floor($hours) !== $hours) {
+            return 'часа';
+        }
+
+        $hours = (int) $hours;
+        $lastTwoDigits = $hours % 100;
+
+        if ($lastTwoDigits >= 11 && $lastTwoDigits <= 14) {
+            return 'часов';
+        }
+
+        return match ($hours % 10) {
+            1 => 'час',
+            2, 3, 4 => 'часа',
+            default => 'часов',
+        };
     }
 }

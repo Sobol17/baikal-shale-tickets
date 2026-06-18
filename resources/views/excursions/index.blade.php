@@ -113,7 +113,7 @@
                                 </div>
 
                                 <div class="meta-row">
-                                    <span class="meta-pill">{{ $excursion->duration_minutes }} мин.</span>
+                                    <span class="meta-pill">{{ $excursion->duration_hours_label }}</span>
                                     <span class="meta-pill">взрослый {{ number_format($excursion->adult_price_cents / 100, 0, ',', ' ') }} ₽</span>
                                     <span class="meta-pill">детский {{ number_format($excursion->child_price_cents / 100, 0, ',', ' ') }} ₽</span>
                                 </div>

@@ -39,7 +39,15 @@ class ExcursionResource extends Resource
             TextInput::make('slug')->label('Slug')->required()->unique(ignoreRecord: true)->maxLength(255),
             Select::make('season')->label('Сезон')->options(ExcursionSeason::options())->required(),
             Select::make('status')->label('Статус')->options(ExcursionStatus::options())->required(),
-            TextInput::make('duration_minutes')->label('Длительность, минут')->numeric()->required()->minValue(1),
+            TextInput::make('duration_minutes')
+                ->label('Длительность, часы')
+                ->numeric()
+                ->required()
+                ->minValue(0.25)
+                ->step(0.25)
+                ->suffix('ч')
+                ->formatStateUsing(fn (?int $state): ?string => $state === null ? null : (string) ($state / 60))
+                ->dehydrateStateUsing(fn (mixed $state): int => (int) round(((float) str_replace(',', '.', (string) $state)) * 60)),
             TextInput::make('adult_price_cents')
                 ->label('Взрослая цена, ₽')
                 ->numeric()
@@ -61,14 +69,13 @@ class ExcursionResource extends Resource
             TextInput::make('meeting_point')->label('Место встречи')->required()->maxLength(255),
             FileUpload::make('cover_image')
                 ->label('Обложка')
-                ->helperText('Загрузите изображение в пропорции 16:9. Подойдут размеры 1280x720, 1600x900, 1920x1080. Максимальный размер файла: 4 МБ.')
+                ->helperText('Загрузите изображение в пропорции 16:9. Подойдут размеры 1280x720, 1600x900, 1920x1080.')
                 ->image()
                 ->disk('public')
                 ->directory('excursions/covers')
                 ->visibility('public')
                 ->imagePreviewHeight('180')
                 ->imageAspectRatio('16:9')
-                ->maxSize(4096)
                 ->openable()
                 ->downloadable()
                 ->columnSpanFull(),
@@ -89,7 +96,10 @@ class ExcursionResource extends Resource
                 TextColumn::make('child_price_cents')->label('Детская цена')->money('RUB', divideBy: 100)->sortable(),
                 TextColumn::make('booking_starts_on')->label('Даты с')->date('d.m.Y')->sortable(),
                 TextColumn::make('booking_ends_on')->label('Даты по')->date('d.m.Y')->sortable(),
-                TextColumn::make('duration_minutes')->label('Мин.')->sortable(),
+                TextColumn::make('duration_minutes')
+                    ->label('Длительность')
+                    ->formatStateUsing(fn (Excursion $record): string => $record->duration_hours_label)
+                    ->sortable(),
                 TextColumn::make('updated_at')->label('Обновлено')->dateTime('d.m.Y H:i')->sortable(),
             ])
             ->recordActions([
