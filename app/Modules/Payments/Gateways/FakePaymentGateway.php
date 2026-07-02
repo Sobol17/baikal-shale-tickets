@@ -24,13 +24,4 @@ class FakePaymentGateway implements PaymentGateway
             ],
         );
     }
-
-    public function getState(Payment $payment): array
-    {
-        return [
-            'provider' => 'fake',
-            'PaymentId' => $payment->provider_payment_id,
-            'Status' => $payment->status->value,
-        ];
-    }
 }

@@ -3,10 +3,8 @@
 namespace App\Filament\Resources\Payments;
 
 use App\Filament\Resources\Payments\Pages\ListPayments;
-use App\Modules\Payments\Actions\SyncPaymentStateAction;
 use App\Modules\Payments\Data\PaymentStatus;
 use App\Modules\Payments\Models\Payment;
-use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -39,7 +37,6 @@ class PaymentResource extends Resource
                 TextColumn::make('id')->label('ID')->sortable(),
                 TextColumn::make('booking.uuid')->label('Бронь')->searchable()->limit(8),
                 TextColumn::make('provider')->label('Провайдер')->sortable(),
-                TextColumn::make('provider_payment_id')->label('Provider ID')->searchable(),
                 TextColumn::make('amount_cents')->label('Сумма')->money('RUB', divideBy: 100)->sortable(),
                 TextColumn::make('status')->label('Статус')->badge()->formatStateUsing(fn (PaymentStatus $state): string => $state->label()),
                 TextColumn::make('created_at')->label('Создано')->dateTime('d.m.Y H:i')->sortable(),
@@ -52,10 +49,6 @@ class PaymentResource extends Resource
                 ]),
             ])
             ->recordActions([
-                Action::make('sync')
-                    ->label('Сверить')
-                    ->requiresConfirmation()
-                    ->action(fn (Payment $record, SyncPaymentStateAction $sync): Payment => $sync->handle($record)),
                 ViewAction::make(),
             ]);
     }

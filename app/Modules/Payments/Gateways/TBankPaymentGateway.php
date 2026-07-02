@@ -51,9 +51,14 @@ class TBankPaymentGateway implements PaymentGateway
             'Description' => str($excursion->title)->limit(140, '')->toString(),
             'PayType' => 'O',
             'Language' => 'ru',
+            'OperationInitiatorType' => '0',
             'NotificationURL' => config('services.tbank.notification_url'),
-            'SuccessURL' => config('services.tbank.success_url'),
-            'FailURL' => config('services.tbank.fail_url'),
+            'SuccessURL' => route('payment.success', ['booking' => $booking->uuid]),
+            'FailURL' => route('payment.fail', ['booking' => $booking->uuid]),
+            'DATA' => [
+                'booking_uuid' => $booking->uuid,
+                'payment_id' => (string) $payment->id,
+            ],
             'Receipt' => [
                 'Email' => $booking->customer_email,
                 'Phone' => $booking->customer_phone,
@@ -80,21 +85,5 @@ class TBankPaymentGateway implements PaymentGateway
             requestPayload: $payload,
             responsePayload: $response,
         );
-    }
-
-    public function getState(Payment $payment): array
-    {
-        $payload = [
-            'TerminalKey' => config('services.tbank.terminal_key'),
-            'PaymentId' => $payment->provider_payment_id,
-        ];
-        $payload['Token'] = $this->tokens->make($payload, (string) config('services.tbank.password'));
-
-        return Http::asJson()
-            ->acceptJson()
-            ->timeout((int) config('services.tbank.timeout', 10))
-            ->post(rtrim((string) config('services.tbank.api_url'), '/').'/v2/GetState', $payload)
-            ->throw()
-            ->json();
     }
 }

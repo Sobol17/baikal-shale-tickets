@@ -28,4 +28,4 @@ docker compose exec app php artisan db:seed --force
 - `/admin` доступен только пользователю с `is_admin=true`.
 - Worker запущен и обрабатывает очередь.
 - Тестовое уведомление Т-Банка доходит до `/payments/tbank/notifications`.
-- `php artisan payments:sync {payment}` сверяет платеж с провайдером.
+- Успешное уведомление Т-Банка переводит бронь в оплаченное состояние и отправляет email клиенту.

@@ -420,14 +420,7 @@ docker compose exec app php artisan about
 - SMTP отправляет письма;
 - worker обрабатывает очередь;
 - Т-Банк может достучаться до `TBANK_NOTIFICATION_URL`;
-- успешная оплата переводит booking в подтвержденное состояние;
-- `php artisan payments:sync {payment}` синхронизирует платеж с провайдером.
-
-Команда ручной сверки платежа:
-
-```bash
-docker compose exec app php artisan payments:sync {payment}
-```
+- успешное уведомление Т-Банка переводит booking в подтвержденное состояние и отправляет email клиенту.
 
 ## Частые проблемы
 

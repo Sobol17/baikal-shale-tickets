@@ -15,7 +15,9 @@ class MarkPaymentPaidAction
      */
     public function handle(Payment $payment, array $payload = []): Payment
     {
-        return DB::transaction(function () use ($payment, $payload): Payment {
+        $paidBooking = null;
+
+        $payment = DB::transaction(function () use ($payment, $payload, &$paidBooking): Payment {
             $payment = Payment::query()->lockForUpdate()->findOrFail($payment->id);
             $booking = $payment->booking()->lockForUpdate()->firstOrFail();
             $wasPaid = $booking->status === BookingStatus::Paid;
@@ -35,10 +37,16 @@ class MarkPaymentPaidAction
                     'paid_at' => $booking->paid_at ?? $paidAt,
                 ]);
 
-                BookingPaid::dispatch($booking->refresh());
+                $paidBooking = $booking->refresh();
             }
 
             return $payment->refresh();
         });
+
+        if ($paidBooking !== null) {
+            BookingPaid::dispatch($paidBooking);
+        }
+
+        return $payment;
     }
 }

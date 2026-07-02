@@ -79,12 +79,6 @@ vendor/bin/pint --test
 npm run build
 ```
 
-Сверка платежа вручную:
-
-```bash
-php artisan payments:sync {payment}
-```
-
 Форматирование PHP:
 
 ```bash

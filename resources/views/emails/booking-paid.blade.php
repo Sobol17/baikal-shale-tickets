@@ -14,3 +14,10 @@
 @if ($booking->excursion->rules)
     <p>{{ $booking->excursion->rules }}</p>
 @endif
+
+<p>
+    Если возникнут вопросы, свяжитесь с нами:<br>
+    Телефон: <a href="tel:+79397941808">+7 (939) 794-18-08</a><br>
+    Дополнительный телефон: <a href="tel:+73952550464">+7 (3952) 550-464</a><br>
+    Email: <a href="mailto:info@baikalvisa.ru">info@baikalvisa.ru</a>
+</p>
