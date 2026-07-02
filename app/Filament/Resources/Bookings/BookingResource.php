@@ -2,12 +2,10 @@
 
 namespace App\Filament\Resources\Bookings;
 
-use App\Filament\Resources\Bookings\Pages\EditBooking;
 use App\Filament\Resources\Bookings\Pages\ListBookings;
 use App\Modules\Bookings\Data\BookingStatus;
 use App\Modules\Bookings\Models\Booking;
-use Filament\Actions\Action;
-use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -16,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class BookingResource extends Resource
 {
@@ -26,6 +25,16 @@ class BookingResource extends Resource
     protected static ?string $pluralModelLabel = 'Бронирования';
 
     protected static ?string $recordTitleAttribute = 'uuid';
+
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -64,15 +73,7 @@ class BookingResource extends Resource
                 SelectFilter::make('status')->label('Статус')->options(BookingStatus::options()),
             ])
             ->recordActions([
-                Action::make('cancel')
-                    ->label('Отменить')
-                    ->requiresConfirmation()
-                    ->visible(fn (Booking $record): bool => $record->status !== BookingStatus::Cancelled)
-                    ->action(fn (Booking $record): bool => $record->update([
-                        'status' => BookingStatus::Cancelled,
-                        'cancelled_at' => now(),
-                    ])),
-                EditAction::make(),
+                ViewAction::make(),
             ]);
     }
 
@@ -80,7 +81,6 @@ class BookingResource extends Resource
     {
         return [
             'index' => ListBookings::route('/'),
-            'edit' => EditBooking::route('/{record}/edit'),
         ];
     }
 }

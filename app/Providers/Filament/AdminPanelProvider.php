@@ -28,6 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->brandName('Байкал Шале')
             ->login()
+            ->profile()
             ->colors([
                 'primary' => Color::Amber,
             ])
