@@ -20,6 +20,8 @@
 - `.env.production.example` - пример production-переменных.
 - `docker/nginx/default.conf` - Nginx-конфигурация для Laravel front controller.
 
+`app_storage` монтируется в `app`, `worker` и `nginx`. Это важно для публичных загрузок: Laravel сохраняет файлы в `storage/app/public`, а Nginx отдает их через symlink `public/storage`, созданный в `nginx`-образе.
+
 ## Предварительные требования
 
 На VPS должны быть установлены:
