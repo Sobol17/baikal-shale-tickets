@@ -49,7 +49,7 @@ class BookingResource extends Resource
             TextInput::make('adult_tickets_count')->label('Взрослые билеты')->numeric()->required()->minValue(0),
             TextInput::make('child_tickets_count')->label('Детские билеты')->numeric()->required()->minValue(0),
             TextInput::make('seats_count')->label('Билеты')->numeric()->required()->minValue(1),
-            TextInput::make('amount_cents')->label('Сумма, коп.')->numeric()->required()->minValue(1),
+            TextInput::make('amount_cents')->label('Предоплата, коп.')->numeric()->required()->minValue(1),
         ]);
     }
 
@@ -65,7 +65,7 @@ class BookingResource extends Resource
                 TextColumn::make('adult_tickets_count')->label('Взр.')->sortable(),
                 TextColumn::make('child_tickets_count')->label('Дет.')->sortable(),
                 TextColumn::make('seats_count')->label('Билеты')->sortable(),
-                TextColumn::make('amount_cents')->label('Сумма')->money('RUB', divideBy: 100)->sortable(),
+                TextColumn::make('amount_cents')->label('Предоплата')->money('RUB', divideBy: 100)->sortable(),
                 TextColumn::make('status')->label('Статус')->badge()->formatStateUsing(fn (BookingStatus $state): string => $state->label()),
                 TextColumn::make('created_at')->label('Создано')->dateTime('d.m.Y H:i')->sortable(),
             ])

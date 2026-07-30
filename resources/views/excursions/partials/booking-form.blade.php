@@ -74,8 +74,8 @@
 
     @if ($showPrepaymentDetails ?? false)
         <div class="purchase-form__prices">
-            <span>Предоплата за взрослого: {{ number_format($excursion->adult_price_cents / 100, 0, ',', ' ') }} ₽</span>
-            <span>Предоплата за ребёнка: {{ number_format($excursion->child_price_cents / 100, 0, ',', ' ') }} ₽</span>
+            <span>Полная стоимость взрослого билета: {{ number_format($excursion->adult_price_cents / 100, 0, ',', ' ') }} ₽</span>
+            <span>Полная стоимость детского билета: {{ number_format($excursion->child_price_cents / 100, 0, ',', ' ') }} ₽</span>
         </div>
 
         <p class="purchase-form__prepayment">

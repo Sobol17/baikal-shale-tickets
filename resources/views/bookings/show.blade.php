@@ -31,7 +31,7 @@
                     <dd class="fact-value">{{ $booking->seats_count }}</dd>
                 </div>
                 <div>
-                    <dt class="fact-label">Сумма</dt>
+                    <dt class="fact-label">Предоплата</dt>
                     <dd class="fact-value">{{ number_format($booking->amount_cents / 100, 0, ',', ' ') }} ₽</dd>
                 </div>
             </dl>

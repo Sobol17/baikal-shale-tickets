@@ -263,15 +263,21 @@ window.bookingCheckout = ({
     },
 
     get prepaymentCents() {
-        return (this.adultPriceCents * this.adultTicketsCount) + (this.childPriceCents * this.childTicketsCount);
+        return (this.prepaymentForTicket(this.adultPriceCents) * this.adultTicketsCount)
+            + (this.prepaymentForTicket(this.childPriceCents) * this.childTicketsCount);
     },
 
     get fullPriceCents() {
-        return this.prepaymentCents * 10;
+        return (this.adultPriceCents * this.adultTicketsCount)
+            + (this.childPriceCents * this.childTicketsCount);
     },
 
     get remainingCents() {
         return this.fullPriceCents - this.prepaymentCents;
+    },
+
+    prepaymentForTicket(fullPriceCents) {
+        return Math.round(Number(fullPriceCents) / 1000) * 100;
     },
 
     normalizeTickets() {

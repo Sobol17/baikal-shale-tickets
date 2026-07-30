@@ -2,6 +2,7 @@
 
 namespace App\Modules\Payments\Gateways;
 
+use App\Modules\Bookings\Support\BookingPriceCalculator;
 use App\Modules\Payments\Contracts\PaymentGateway;
 use App\Modules\Payments\Data\PaymentInitializationResult;
 use App\Modules\Payments\Models\Payment;
@@ -11,21 +12,29 @@ use RuntimeException;
 
 class TBankPaymentGateway implements PaymentGateway
 {
-    public function __construct(private readonly TBankToken $tokens) {}
+    public function __construct(
+        private readonly TBankToken $tokens,
+        private readonly BookingPriceCalculator $prices,
+    ) {}
 
     public function initialize(Payment $payment): PaymentInitializationResult
     {
         $payment->loadMissing('booking.excursion');
         $booking = $payment->booking;
         $excursion = $booking->excursion;
+        $price = $this->prices->calculate(
+            $excursion,
+            $booking->adult_tickets_count,
+            $booking->child_tickets_count,
+        );
         $items = [];
 
         if ($booking->adult_tickets_count > 0) {
             $items[] = [
                 'Name' => str($excursion->title.' - взрослый билет')->limit(128, '')->toString(),
-                'Price' => $excursion->adult_price_cents,
+                'Price' => $price->adultPrepaymentCents,
                 'Quantity' => $booking->adult_tickets_count,
-                'Amount' => $excursion->adult_price_cents * $booking->adult_tickets_count,
+                'Amount' => $price->adultPrepaymentCents * $booking->adult_tickets_count,
                 'Tax' => config('services.tbank.tax'),
                 'PaymentMethod' => config('services.tbank.payment_method'),
                 'PaymentObject' => config('services.tbank.payment_object'),
@@ -35,9 +44,9 @@ class TBankPaymentGateway implements PaymentGateway
         if ($booking->child_tickets_count > 0) {
             $items[] = [
                 'Name' => str($excursion->title.' - детский билет')->limit(128, '')->toString(),
-                'Price' => $excursion->child_price_cents,
+                'Price' => $price->childPrepaymentCents,
                 'Quantity' => $booking->child_tickets_count,
-                'Amount' => $excursion->child_price_cents * $booking->child_tickets_count,
+                'Amount' => $price->childPrepaymentCents * $booking->child_tickets_count,
                 'Tax' => config('services.tbank.tax'),
                 'PaymentMethod' => config('services.tbank.payment_method'),
                 'PaymentObject' => config('services.tbank.payment_object'),

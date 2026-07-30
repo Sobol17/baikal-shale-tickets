@@ -8,9 +8,9 @@
     Количество билетов: <strong>{{ $booking->seats_count }}</strong><br>
     Взрослые: <strong>{{ $booking->adult_tickets_count }}</strong><br>
     Дети: <strong>{{ $booking->child_tickets_count }}</strong><br>
-    Полная стоимость: <strong>{{ number_format(($booking->amount_cents * 10) / 100, 0, ',', ' ') }} ₽</strong><br>
+    Полная стоимость: <strong>{{ number_format($price->fullPriceCents / 100, 0, ',', ' ') }} ₽</strong><br>
     Внесённая предоплата 10%: <strong>{{ number_format($booking->amount_cents / 100, 0, ',', ' ') }} ₽</strong><br>
-    Остаток к оплате 90%: <strong>{{ number_format(($booking->amount_cents * 9) / 100, 0, ',', ' ') }} ₽</strong><br>
+    Остаток к оплате: <strong>{{ number_format(($price->fullPriceCents - $booking->amount_cents) / 100, 0, ',', ' ') }} ₽</strong><br>
     Место встречи: <strong>{{ $booking->excursion->meeting_point }}</strong>
 </p>
 

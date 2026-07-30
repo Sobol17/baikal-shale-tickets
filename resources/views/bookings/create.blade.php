@@ -14,9 +14,8 @@
     }
 
     $initialCompanions = array_slice($initialCompanions, 0, $companionsCount);
-    $prepaymentCents = ($excursion->adult_price_cents * $adultTicketsCount) + ($excursion->child_price_cents * $childTicketsCount);
-    $fullPriceCents = $prepaymentCents * 10;
-    $remainingCents = $fullPriceCents - $prepaymentCents;
+    $initialPrice = app(\App\Modules\Bookings\Support\BookingPriceCalculator::class)
+        ->calculate($excursion, $adultTicketsCount, $childTicketsCount);
 @endphp
 
 <x-layouts.app title="Оформление заказа" robots="noindex,nofollow">
@@ -201,17 +200,17 @@
 
                 <div class="checkout-summary__primary">
                     <span>Предоплата 10%</span>
-                    <strong x-text="money(prepaymentCents)">{{ number_format($prepaymentCents / 100, 0, ',', ' ') }} ₽</strong>
+                    <strong x-text="money(prepaymentCents)">{{ number_format($initialPrice->prepaymentCents / 100, 0, ',', ' ') }} ₽</strong>
                 </div>
 
                 <dl class="checkout-summary__details">
                     <div>
                         <dt>Полная стоимость</dt>
-                        <dd x-text="money(fullPriceCents)">{{ number_format($fullPriceCents / 100, 0, ',', ' ') }} ₽</dd>
+                        <dd x-text="money(fullPriceCents)">{{ number_format($initialPrice->fullPriceCents / 100, 0, ',', ' ') }} ₽</dd>
                     </div>
                     <div>
                         <dt>Остаток к оплате</dt>
-                        <dd x-text="money(remainingCents)">{{ number_format($remainingCents / 100, 0, ',', ' ') }} ₽</dd>
+                        <dd x-text="money(remainingCents)">{{ number_format($initialPrice->remainingCents / 100, 0, ',', ' ') }} ₽</dd>
                     </div>
                 </dl>
 

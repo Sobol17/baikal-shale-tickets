@@ -4,6 +4,7 @@ namespace App\Modules\Bookings\Actions;
 
 use App\Modules\Bookings\Data\BookingStatus;
 use App\Modules\Bookings\Models\Booking;
+use App\Modules\Bookings\Support\BookingPriceCalculator;
 use App\Modules\Excursions\Data\ExcursionStatus;
 use App\Modules\Excursions\Models\Excursion;
 use Illuminate\Support\Carbon;
@@ -13,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class CreateBookingAction
 {
+    public function __construct(private readonly BookingPriceCalculator $prices) {}
+
     /**
      * @param  array{excursion_id:int, excursion_date:string, customer_name:string, customer_email:string, customer_phone:string, companions:array<int, array<string, mixed>>, adult_tickets_count:int, child_tickets_count:int, seats_count:int}  $data
      */
@@ -40,6 +43,12 @@ class CreateBookingAction
                 ]);
             }
 
+            $price = $this->prices->calculate(
+                $excursion,
+                $data['adult_tickets_count'],
+                $data['child_tickets_count'],
+            );
+
             return Booking::query()->create([
                 'uuid' => (string) Str::uuid(),
                 'excursion_id' => $excursion->id,
@@ -51,8 +60,7 @@ class CreateBookingAction
                 'child_tickets_count' => $data['child_tickets_count'],
                 'companions' => $data['companions'] === [] ? null : $data['companions'],
                 'seats_count' => $data['seats_count'],
-                'amount_cents' => ($excursion->adult_price_cents * $data['adult_tickets_count'])
-                    + ($excursion->child_price_cents * $data['child_tickets_count']),
+                'amount_cents' => $price->prepaymentCents,
                 'status' => BookingStatus::PendingPayment,
             ]);
         });

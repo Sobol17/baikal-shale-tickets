@@ -57,8 +57,8 @@ it('creates a guest group booking and confirms it through fake payment gateway',
         ->assertRedirect(route('payment.success', ['booking' => $booking->uuid]));
 
     expect($booking->refresh()->status)->toBe(BookingStatus::Paid);
-    expect($booking->amount_cents)->toBe(300000);
-    expect($booking->latestPayment()->amount_cents)->toBe(300000);
+    expect($booking->amount_cents)->toBe(30000);
+    expect($booking->latestPayment()->amount_cents)->toBe(30000);
     expect($booking->adult_tickets_count)->toBe(1);
     expect($booking->child_tickets_count)->toBe(1);
     expect($booking->seats_count)->toBe(2);
@@ -74,11 +74,11 @@ it('creates a guest group booking and confirms it through fake payment gateway',
         expect($body)
             ->toContain('предоплата 10% прошла успешно')
             ->toContain('Полная стоимость')
-            ->toContain('30 000 ₽')
-            ->toContain('Внесённая предоплата 10%')
             ->toContain('3 000 ₽')
-            ->toContain('Остаток к оплате 90%')
-            ->toContain('27 000 ₽')
+            ->toContain('Внесённая предоплата 10%')
+            ->toContain('300 ₽')
+            ->toContain('Остаток к оплате')
+            ->toContain('2 700 ₽')
             ->toContain('оплатить лично перед началом экскурсии');
 
         return true;
@@ -104,7 +104,8 @@ it('opens checkout from selected excursion date and ticket counts', function ():
         ->assertSee('aria-current="page"', false)
         ->assertDontSee('Назад к экскурсиям')
         ->assertSee('Дата экскурсии')
-        ->assertSee('Предоплата за взрослого')
+        ->assertSee('Полная стоимость взрослого билета')
+        ->assertSee('Полная стоимость детского билета')
         ->assertSee('На сайте оплачивается предоплата 10%')
         ->assertSee('Оставшиеся 90% нужно оплатить лично перед началом экскурсии')
         ->assertSee('calendar-popover', false)
@@ -133,10 +134,10 @@ it('opens checkout from selected excursion date and ticket counts', function ():
         ->assertSee('К оплате сейчас')
         ->assertSee('Предоплата 10%')
         ->assertSee('Полная стоимость')
-        ->assertSee('30 000 ₽')
         ->assertSee('3 000 ₽')
+        ->assertSee('300 ₽')
         ->assertSee('Остаток к оплате')
-        ->assertSee('27 000 ₽')
+        ->assertSee('2 700 ₽')
         ->assertSee('Оставшиеся 90% оплачиваются лично перед началом экскурсии')
         ->assertDontSee('Сервисный сбор')
         ->assertDontSee('Предоплата за взрослых')
@@ -156,7 +157,7 @@ it('shows purchase controls on catalog cards', function (): void {
         ->assertOk()
         ->assertSee($excursion->title)
         ->assertSee('Дата экскурсии')
-        ->assertDontSee('Предоплата за взрослого')
+        ->assertDontSee('Полная стоимость взрослого билета')
         ->assertDontSee('На сайте оплачивается предоплата 10%')
         ->assertDontSee('Оставшиеся 90% нужно оплатить лично перед началом экскурсии')
         ->assertSee('calendar-popover', false)
