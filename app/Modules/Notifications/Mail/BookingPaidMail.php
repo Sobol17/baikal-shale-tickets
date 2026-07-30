@@ -18,7 +18,7 @@ class BookingPaidMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Ваше бронирование экскурсии подтверждено',
+            subject: 'Предоплата внесена — бронирование экскурсии подтверждено',
         );
     }
 

@@ -262,16 +262,16 @@ window.bookingCheckout = ({
         return Math.max(0, this.seatsCount - 1);
     },
 
-    get totalCents() {
+    get prepaymentCents() {
         return (this.adultPriceCents * this.adultTicketsCount) + (this.childPriceCents * this.childTicketsCount);
     },
 
-    get adultTotalCents() {
-        return this.adultPriceCents * this.adultTicketsCount;
+    get fullPriceCents() {
+        return this.prepaymentCents * 10;
     },
 
-    get childTotalCents() {
-        return this.childPriceCents * this.childTicketsCount;
+    get remainingCents() {
+        return this.fullPriceCents - this.prepaymentCents;
     },
 
     normalizeTickets() {

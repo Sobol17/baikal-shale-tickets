@@ -14,10 +14,22 @@
     }
 
     $initialCompanions = array_slice($initialCompanions, 0, $companionsCount);
-    $totalCents = ($excursion->adult_price_cents * $adultTicketsCount) + ($excursion->child_price_cents * $childTicketsCount);
+    $prepaymentCents = ($excursion->adult_price_cents * $adultTicketsCount) + ($excursion->child_price_cents * $childTicketsCount);
+    $fullPriceCents = $prepaymentCents * 10;
+    $remainingCents = $fullPriceCents - $prepaymentCents;
 @endphp
 
 <x-layouts.app title="Оформление заказа" robots="noindex,nofollow">
+    <div class="app-container page-breadcrumbs">
+        <nav class="breadcrumbs" aria-label="Хлебные крошки">
+            <ol>
+                <li><a href="{{ route('home') }}">Экскурсии</a></li>
+                <li><a href="{{ route('excursions.show', $excursion) }}">{{ $excursion->title }}</a></li>
+                <li aria-current="page"><span>Оформление</span></li>
+            </ol>
+        </nav>
+    </div>
+
     <form
         class="app-container checkout-grid"
         method="POST"
@@ -36,7 +48,6 @@
 
         <main class="checkout-main">
             <section class="panel checkout-brief">
-                <a href="{{ route('excursions.show', $excursion) }}" class="button button--ghost">Назад к экскурсии</a>
                 <h1>{{ $excursion->title }}</h1>
 
                 <div class="trip-facts">
@@ -186,27 +197,31 @@
 
         <aside class="panel checkout-summary">
             <div class="checkout-summary__body">
-                <h2>Заказ</h2>
-                <div class="summary-line">
-                    <span>Взрослые билеты, <span x-text="adultTicketsCount">{{ $adultTicketsCount }}</span> шт.</span>
-                    <strong x-text="money(adultTotalCents)">{{ number_format(($excursion->adult_price_cents * $adultTicketsCount) / 100, 0, ',', ' ') }} ₽</strong>
+                <h2>К оплате сейчас</h2>
+
+                <div class="checkout-summary__primary">
+                    <span>Предоплата 10%</span>
+                    <strong x-text="money(prepaymentCents)">{{ number_format($prepaymentCents / 100, 0, ',', ' ') }} ₽</strong>
                 </div>
-                <div class="summary-line">
-                    <span>Детские билеты, <span x-text="childTicketsCount">{{ $childTicketsCount }}</span> шт.</span>
-                    <strong x-text="money(childTotalCents)">{{ number_format(($excursion->child_price_cents * $childTicketsCount) / 100, 0, ',', ' ') }} ₽</strong>
-                </div>
-                <div class="summary-line summary-line--muted">
-                    <span>Сервисный сбор</span>
-                    <strong>0 ₽</strong>
-                </div>
-                <div class="summary-line summary-total">
-                    <span>Итого</span>
-                    <strong x-text="money(totalCents)">{{ number_format($totalCents / 100, 0, ',', ' ') }} ₽</strong>
-                </div>
+
+                <dl class="checkout-summary__details">
+                    <div>
+                        <dt>Полная стоимость</dt>
+                        <dd x-text="money(fullPriceCents)">{{ number_format($fullPriceCents / 100, 0, ',', ' ') }} ₽</dd>
+                    </div>
+                    <div>
+                        <dt>Остаток к оплате</dt>
+                        <dd x-text="money(remainingCents)">{{ number_format($remainingCents / 100, 0, ',', ' ') }} ₽</dd>
+                    </div>
+                </dl>
+
+                <p class="checkout-summary__payment-note">
+                    Оставшиеся 90% оплачиваются лично перед началом экскурсии.
+                </p>
             </div>
 
             <div class="checkout-summary__footer">
-                <button class="button button--success" type="submit">Оформить заказ</button>
+                <button class="button button--success" type="submit">Оплатить предоплату</button>
 
                 <label class="checkbox-row">
                     <input type="checkbox" name="terms_accepted" value="1" @checked(old('terms_accepted')) required>

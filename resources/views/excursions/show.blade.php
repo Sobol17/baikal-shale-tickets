@@ -50,11 +50,19 @@
     type="product"
     :structured-data="$structuredData"
 >
+    <div class="app-container page-breadcrumbs">
+        <nav class="breadcrumbs" aria-label="Хлебные крошки">
+            <ol>
+                <li><a href="{{ route('home') }}">Экскурсии</a></li>
+                <li aria-current="page"><span>{{ $excursion->title }}</span></li>
+            </ol>
+        </nav>
+    </div>
+
     <div class="app-container detail-layout">
         <main class="detail-main">
             <section class="panel detail-hero">
-                <a href="{{ route('home') }}" class="button button--ghost">Назад к экскурсиям</a>
-                <p class="kicker kicker--spaced">{{ $excursion->season->label() }}</p>
+                <p class="kicker">{{ $excursion->season->label() }}</p>
                 <h1>{{ $excursion->title }}</h1>
                 <p class="lead">{{ $excursion->short_description }}</p>
 
@@ -87,7 +95,10 @@
             <h2 class="aside-title">Купить билет</h2>
             <p class="muted-copy">Выберите дату и количество участников.</p>
 
-            @include('excursions.partials.booking-form', ['excursion' => $excursion])
+            @include('excursions.partials.booking-form', [
+                'excursion' => $excursion,
+                'showPrepaymentDetails' => true,
+            ])
         </aside>
     </div>
 </x-layouts.app>

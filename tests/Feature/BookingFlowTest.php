@@ -5,6 +5,7 @@ use App\Modules\Bookings\Models\Booking;
 use App\Modules\Excursions\Data\ExcursionStatus;
 use App\Modules\Excursions\Models\Excursion;
 use App\Modules\Notifications\Mail\BookingPaidMail;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 
 function bookingPayload(Excursion $excursion, ?string $date = null, int $adultTickets = 1, int $childTickets = 1): array
@@ -36,6 +37,7 @@ function bookingPayload(Excursion $excursion, ?string $date = null, int $adultTi
 
 it('creates a guest group booking and confirms it through fake payment gateway', function (): void {
     Mail::fake();
+    Config::set('services.payments.default', 'fake');
 
     $excursion = Excursion::factory()->create([
         'status' => ExcursionStatus::Active,
@@ -56,6 +58,7 @@ it('creates a guest group booking and confirms it through fake payment gateway',
 
     expect($booking->refresh()->status)->toBe(BookingStatus::Paid);
     expect($booking->amount_cents)->toBe(300000);
+    expect($booking->latestPayment()->amount_cents)->toBe(300000);
     expect($booking->adult_tickets_count)->toBe(1);
     expect($booking->child_tickets_count)->toBe(1);
     expect($booking->seats_count)->toBe(2);
@@ -65,7 +68,21 @@ it('creates a guest group booking and confirms it through fake payment gateway',
         'first_name' => 'Guest 1',
     ]);
 
-    Mail::assertSent(BookingPaidMail::class);
+    Mail::assertSent(BookingPaidMail::class, function (BookingPaidMail $mail): bool {
+        $body = $mail->render();
+
+        expect($body)
+            ->toContain('предоплата 10% прошла успешно')
+            ->toContain('Полная стоимость')
+            ->toContain('30 000 ₽')
+            ->toContain('Внесённая предоплата 10%')
+            ->toContain('3 000 ₽')
+            ->toContain('Остаток к оплате 90%')
+            ->toContain('27 000 ₽')
+            ->toContain('оплатить лично перед началом экскурсии');
+
+        return true;
+    });
 });
 
 it('opens checkout from selected excursion date and ticket counts', function (): void {
@@ -82,7 +99,14 @@ it('opens checkout from selected excursion date and ticket counts', function ():
     $this->get(route('excursions.show', $excursion))
         ->assertOk()
         ->assertSee('Купить билет')
+        ->assertSee('aria-label="Хлебные крошки"', false)
+        ->assertSee(route('home'), false)
+        ->assertSee('aria-current="page"', false)
+        ->assertDontSee('Назад к экскурсиям')
         ->assertSee('Дата экскурсии')
+        ->assertSee('Предоплата за взрослого')
+        ->assertSee('На сайте оплачивается предоплата 10%')
+        ->assertSee('Оставшиеся 90% нужно оплатить лично перед началом экскурсии')
         ->assertSee('calendar-popover', false)
         ->assertDontSee('type="date"', false)
         ->assertDontSee('adult_tickets_count', false)
@@ -93,14 +117,31 @@ it('opens checkout from selected excursion date and ticket counts', function ():
     $this->get(route('bookings.create', [
         'excursion_id' => $excursion->id,
         'excursion_date' => $date,
+        'adult_tickets_count' => 2,
+        'child_tickets_count' => 1,
     ]))
         ->assertOk()
         ->assertSee('Билеты')
         ->assertSee('adult_tickets_count', false)
         ->assertSee('child_tickets_count', false)
+        ->assertSee('aria-label="Хлебные крошки"', false)
+        ->assertSee(route('home'), false)
+        ->assertSee(route('excursions.show', $excursion), false)
+        ->assertSee('Оформление')
+        ->assertDontSee('Назад к экскурсии')
         ->assertSee('Покупатель билетов')
-        ->assertSee('Взрослые билеты')
-        ->assertSee('Детские билеты');
+        ->assertSee('К оплате сейчас')
+        ->assertSee('Предоплата 10%')
+        ->assertSee('Полная стоимость')
+        ->assertSee('30 000 ₽')
+        ->assertSee('3 000 ₽')
+        ->assertSee('Остаток к оплате')
+        ->assertSee('27 000 ₽')
+        ->assertSee('Оставшиеся 90% оплачиваются лично перед началом экскурсии')
+        ->assertDontSee('Сервисный сбор')
+        ->assertDontSee('Предоплата за взрослых')
+        ->assertDontSee('Предоплата за детей')
+        ->assertSee('Оплатить предоплату');
 });
 
 it('shows purchase controls on catalog cards', function (): void {
@@ -115,6 +156,9 @@ it('shows purchase controls on catalog cards', function (): void {
         ->assertOk()
         ->assertSee($excursion->title)
         ->assertSee('Дата экскурсии')
+        ->assertDontSee('Предоплата за взрослого')
+        ->assertDontSee('На сайте оплачивается предоплата 10%')
+        ->assertDontSee('Оставшиеся 90% нужно оплатить лично перед началом экскурсии')
         ->assertSee('calendar-popover', false)
         ->assertDontSee('type="date"', false)
         ->assertDontSee('adult_tickets_count', false)

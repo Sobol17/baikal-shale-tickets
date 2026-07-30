@@ -72,11 +72,17 @@
         </div>
     </div>
 
-    <div class="purchase-form__prices">
-        <span>Взрослый: {{ number_format($excursion->adult_price_cents / 100, 0, ',', ' ') }} ₽</span>
-        <span>Детский: {{ number_format($excursion->child_price_cents / 100, 0, ',', ' ') }} ₽</span>
-    </div>
+    @if ($showPrepaymentDetails ?? false)
+        <div class="purchase-form__prices">
+            <span>Предоплата за взрослого: {{ number_format($excursion->adult_price_cents / 100, 0, ',', ' ') }} ₽</span>
+            <span>Предоплата за ребёнка: {{ number_format($excursion->child_price_cents / 100, 0, ',', ' ') }} ₽</span>
+        </div>
 
-    <button class="button button--primary" type="submit">Купить билет</button>
+        <p class="purchase-form__prepayment">
+            На сайте оплачивается предоплата 10%. Оставшиеся 90% нужно оплатить лично перед началом экскурсии.
+        </p>
+    @endif
+
+    <button class="button button--primary" type="submit">Забронировать</button>
 </form>
 @endif

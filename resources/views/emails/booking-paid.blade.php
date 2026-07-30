@@ -1,6 +1,6 @@
 <h1>Бронирование подтверждено</h1>
 
-<p>{{ $booking->customer_name }}, оплата прошла успешно.</p>
+<p>{{ $booking->customer_name }}, предоплата 10% прошла успешно.</p>
 
 <p>
     Экскурсия: <strong>{{ $booking->excursion->title }}</strong><br>
@@ -8,8 +8,13 @@
     Количество билетов: <strong>{{ $booking->seats_count }}</strong><br>
     Взрослые: <strong>{{ $booking->adult_tickets_count }}</strong><br>
     Дети: <strong>{{ $booking->child_tickets_count }}</strong><br>
+    Полная стоимость: <strong>{{ number_format(($booking->amount_cents * 10) / 100, 0, ',', ' ') }} ₽</strong><br>
+    Внесённая предоплата 10%: <strong>{{ number_format($booking->amount_cents / 100, 0, ',', ' ') }} ₽</strong><br>
+    Остаток к оплате 90%: <strong>{{ number_format(($booking->amount_cents * 9) / 100, 0, ',', ' ') }} ₽</strong><br>
     Место встречи: <strong>{{ $booking->excursion->meeting_point }}</strong>
 </p>
+
+<p><strong>Оставшуюся сумму нужно оплатить лично перед началом экскурсии.</strong></p>
 
 @if ($booking->excursion->rules)
     <p>{{ $booking->excursion->rules }}</p>
