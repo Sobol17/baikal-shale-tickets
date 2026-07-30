@@ -1,12 +1,12 @@
 @php
     $excursions = $excursionsBySeason->flatten(1)->values();
     $homeUrl = route('home', absolute: true);
-    $description = 'Экскурсии Байкал Шале: маршруты по Байкалу, выбор даты и бронирование билетов без регистрации.';
+    $description = $homePageSettings->text;
     $structuredData = [
         [
             '@context' => 'https://schema.org',
             '@type' => 'WebSite',
-            'name' => 'Байкал Шале',
+            'name' => $homePageSettings->title,
             'url' => $homeUrl,
             'potentialAction' => [
                 '@type' => 'SearchAction',
@@ -37,7 +37,7 @@
         [
             '@context' => 'https://schema.org',
             '@type' => 'ItemList',
-            'name' => 'Экскурсии Байкал Шале',
+            'name' => $homePageSettings->title,
             'itemListElement' => $excursions
                 ->map(fn ($excursion, int $index): array => [
                     '@type' => 'ListItem',
@@ -51,16 +51,26 @@
 @endphp
 
 <x-layouts.app
-    title="Экскурсии Байкал Шале"
+    :title="$homePageSettings->title"
     :description="$description"
     :canonical="$homeUrl"
+    :image="$homePageSettings->background_image_url"
     :structured-data="$structuredData"
 >
     <section class="catalog-intro">
+        @if ($homePageSettings->background_image_url)
+            <img
+                class="catalog-intro__background"
+                src="{{ $homePageSettings->background_image_url }}"
+                alt=""
+                aria-hidden="true"
+            >
+        @endif
+
         <div class="app-container catalog-intro__grid">
             <div>
-                <h1 class="page-title">Экскурсии Байкал Шале</h1>
-                <p class="lead">Выберите маршрут, дату экскурсии и оформите билеты без регистрации.</p>
+                <h1 class="page-title">{{ $homePageSettings->title }}</h1>
+                <p class="lead">{{ $homePageSettings->text }}</p>
             </div>
         </div>
     </section>

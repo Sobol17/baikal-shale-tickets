@@ -15,6 +15,7 @@ Shale Tickets строится как модульный монолит на Lar
 - `Payments` - платежные намерения, callbacks/webhooks, статусы оплаты.
 - `Notifications` - email-уведомления после успешной оплаты.
 - `Analytics` - агрегированная административная статистика по платежам, бронированиям и экскурсиям.
+- `Content` - редактируемый контент публичных страниц, включая hero-блок главной страницы.
 - `Shared` - общие value objects, исключения, базовые контракты и вспомогательные классы.
 
 ## Платежи
@@ -57,6 +58,9 @@ app/
     Notifications/
       Mail/
       Actions/
+    Content/
+      Actions/
+      Models/
     Analytics/
       Actions/
       Data/

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Content\Models\HomePageSetting;
 use App\Modules\Excursions\Actions\ListActiveExcursionsAction;
 use App\Modules\Excursions\Data\ExcursionSeason;
 use Illuminate\Contracts\View\View;
@@ -17,6 +18,7 @@ class HomeController extends Controller
 
         return view('excursions.index', [
             'excursionsBySeason' => $excursions->groupBy(fn ($excursion): string => $excursion->season->value),
+            'homePageSettings' => HomePageSetting::current(),
             'seasons' => ExcursionSeason::cases(),
             'search' => $search,
         ]);

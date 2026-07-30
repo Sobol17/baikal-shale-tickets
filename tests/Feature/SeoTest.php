@@ -19,7 +19,7 @@ it('renders homepage seo metadata and structured data', function (): void {
     $this->get(route('home'))
         ->assertOk()
         ->assertSee('<title>Экскурсии Байкал Шале</title>', false)
-        ->assertSee('<meta name="description" content="Экскурсии Байкал Шале: маршруты по Байкалу, выбор даты и бронирование билетов без регистрации.">', false)
+        ->assertSee('<meta name="description" content="Выберите маршрут, дату экскурсии и оформите билеты без регистрации.">', false)
         ->assertSee('<link rel="canonical" href="'.route('home', absolute: true).'">', false)
         ->assertSee('<meta property="og:type" content="website">', false)
         ->assertSee('"@type":"WebSite"', false)
