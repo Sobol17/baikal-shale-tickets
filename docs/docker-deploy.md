@@ -142,7 +142,11 @@ APP_KEY=base64:...
 Соберите production-образы:
 
 ```bash
-docker compose build
+# Опционально, но настоятельно рекомендуется: personal access token без scope-ов.
+# Без него composer ходит на api.github.com анонимно и ловит HTTP 504.
+export GITHUB_TOKEN=ghp_xxx
+
+COMPOSE_BAKE=1 docker compose build
 ```
 
 Что происходит при сборке:
@@ -153,7 +157,15 @@ docker compose build
 - в итоговый app-образ попадает оптимизированный autoload;
 - storage и bootstrap cache получают права для пользователя `www-data`.
 
-Если сборка падает на `npm ci`, проверьте, что `package-lock.json` соответствует `package.json`. Если падает Composer, проверьте `composer.lock` и доступ к пакетам.
+Если сборка падает на `npm ci`, проверьте, что `package-lock.json` соответствует `package.json`.
+
+Если Composer падает с `... could not be downloaded (HTTP/2 504)` и `Source fallback is disabled`:
+
+- задайте `GITHUB_TOKEN` перед сборкой — анонимный лимит GitHub API самая частая причина;
+- собирайте с `COMPOSE_BAKE=1` (или последовательно: `docker compose build app && docker compose build nginx`), чтобы не запускать несколько `composer install` параллельно;
+- при полностью недоступном GitHub можно временно поднять зеркало Packagist или собрать образ локально и запушить в registry.
+
+`composer install` в Dockerfile сам делает до 3 попыток с паузой 20 секунд, так что разовые 5xx он переживает.
 
 ## Первый запуск
 

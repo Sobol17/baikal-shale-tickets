@@ -14,7 +14,11 @@
 ## Запуск
 
 ```bash
-docker compose build
+# GITHUB_TOKEN снимает анонимный лимит GitHub API — без него composer
+# ловит HTTP 504 на zipball-ах при сборке.
+export GITHUB_TOKEN=ghp_xxx
+
+COMPOSE_BAKE=1 docker compose build
 docker compose up -d
 docker compose exec app php artisan migrate --force
 docker compose exec app php artisan storage:link
@@ -29,3 +33,18 @@ docker compose exec app php artisan db:seed --force
 - Worker запущен и обрабатывает очередь.
 - Тестовое уведомление Т-Банка доходит до `/payments/tbank/notifications`.
 - Успешное уведомление Т-Банка переводит бронь в оплаченное состояние и отправляет email клиенту.
+
+## Сборка
+
+- `worker` переиспользует образ `app` (`image: shale-tickets-app:latest`), поэтому
+  `composer install` выполняется один раз, а не в каждом сервисе параллельно.
+- `nginx` собирает только `public/` и Vite-бандл, без composer-стейджа.
+- `COMPOSE_BAKE=1` заставляет compose собирать все сервисы одним buildx-вызовом
+  с общим кешем стейджей. Без него сборку лучше запускать последовательно:
+  `docker compose build app && docker compose build nginx`.
+- Кеши composer и npm живут в BuildKit cache mounts, повторная сборка не
+  перекачивает зависимости.
+- `composer install` повторяет попытку до 3 раз с паузой 20 секунд — переживает
+  временные 5xx от GitHub.
+- Первая сборка после изменения `Dockerfile` пересоберёт `base` (компиляция
+  `intl` и др.), дальше этот слой берётся из кеша.

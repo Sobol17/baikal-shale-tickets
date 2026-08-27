@@ -4,9 +4,23 @@ use App\Filament\Pages\HomePageSettings;
 use App\Models\User;
 use App\Modules\Content\Actions\UpdateHomePageSettingsAction;
 use App\Modules\Content\Models\HomePageSetting;
+use App\Modules\Excursions\Data\ExcursionSeason;
+use App\Modules\Excursions\Models\Excursion;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+
+/**
+ * Repeater в simple-режиме хранит состояние формы как список элементов,
+ * поэтому в тестах порядок подборок заполняется в «сыром» виде.
+ *
+ * @param  array<int, string>  $seasons
+ * @return array<int, array<string, string>>
+ */
+function seasonOrderFormState(array $seasons): array
+{
+    return array_map(fn (string $season): array => ['season' => $season], $seasons);
+}
 
 it('renders the configured hero content and seo metadata on the homepage', function (): void {
     Storage::fake('public');
@@ -101,4 +115,113 @@ it('validates hero settings and denies the page to non admins', function (): voi
     $this->actingAs($user)
         ->get('/admin/home-page')
         ->assertForbidden();
+});
+
+it('renders season sections in the configured order', function (): void {
+    Excursion::factory()->create(['season' => ExcursionSeason::SummerAutumn]);
+    Excursion::factory()->create(['season' => ExcursionSeason::WinterSpring]);
+
+    $settings = HomePageSetting::query()->findOrFail(HomePageSetting::SINGLETON_ID);
+
+    $settings->update([
+        'season_order' => [
+            ExcursionSeason::WinterSpring->value,
+            ExcursionSeason::SummerAutumn->value,
+        ],
+    ]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSeeInOrder([
+            ExcursionSeason::WinterSpring->label(),
+            ExcursionSeason::SummerAutumn->label(),
+        ]);
+
+    $settings->update([
+        'season_order' => [
+            ExcursionSeason::SummerAutumn->value,
+            ExcursionSeason::WinterSpring->value,
+        ],
+    ]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSeeInOrder([
+            ExcursionSeason::SummerAutumn->label(),
+            ExcursionSeason::WinterSpring->label(),
+        ]);
+});
+
+it('allows an admin to reorder the collections', function (): void {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $reversedOrder = array_reverse(HomePageSetting::defaultSeasonOrder());
+
+    Livewire::actingAs($admin)
+        ->test(HomePageSettings::class)
+        ->fillForm(['season_order' => seasonOrderFormState($reversedOrder)])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect(HomePageSetting::query()->findOrFail(HomePageSetting::SINGLETON_ID)->season_order)
+        ->toBe($reversedOrder);
+
+    // Форма подхватывает сохраненный порядок при открытии страницы.
+    Livewire::actingAs($admin)
+        ->test(HomePageSettings::class)
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect(HomePageSetting::query()->findOrFail(HomePageSetting::SINGLETON_ID)->season_order)
+        ->toBe($reversedOrder);
+});
+
+it('normalizes an incomplete or broken collection order', function (): void {
+    $settings = HomePageSetting::query()->findOrFail(HomePageSetting::SINGLETON_ID);
+
+    $settings->season_order = null;
+    expect($settings->orderedSeasons())->toBe(ExcursionSeason::cases());
+
+    $settings->season_order = [
+        'autumn_of_the_patriarch',
+        ExcursionSeason::WinterSpring->value,
+        ExcursionSeason::WinterSpring->value,
+    ];
+
+    expect($settings->orderedSeasons())->toBe([
+        ExcursionSeason::WinterSpring,
+        ExcursionSeason::SummerAutumn,
+    ]);
+
+    app(UpdateHomePageSettingsAction::class)->handle([
+        'title' => $settings->title,
+        'text' => $settings->text,
+        'background_image' => null,
+        'season_order' => ['autumn_of_the_patriarch', ExcursionSeason::WinterSpring->value],
+    ]);
+
+    expect(HomePageSetting::query()->findOrFail(HomePageSetting::SINGLETON_ID)->season_order)
+        ->toBe([
+            ExcursionSeason::WinterSpring->value,
+            ExcursionSeason::SummerAutumn->value,
+        ]);
+});
+
+it('swaps the collections when the same one is picked twice', function (): void {
+    $admin = User::factory()->create(['is_admin' => true]);
+
+    $component = Livewire::actingAs($admin)->test(HomePageSettings::class);
+
+    $firstItemKey = array_key_first($component->get('data.season_order'));
+
+    // В первой строке выбираем подборку, которая уже стоит во второй.
+    $component
+        ->set("data.season_order.{$firstItemKey}.season", ExcursionSeason::WinterSpring->value)
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect(HomePageSetting::query()->findOrFail(HomePageSetting::SINGLETON_ID)->season_order)
+        ->toBe([
+            ExcursionSeason::WinterSpring->value,
+            ExcursionSeason::SummerAutumn->value,
+        ]);
 });

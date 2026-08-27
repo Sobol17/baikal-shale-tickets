@@ -4,9 +4,12 @@ namespace App\Filament\Pages;
 
 use App\Modules\Content\Actions\UpdateHomePageSettingsAction;
 use App\Modules\Content\Models\HomePageSetting;
+use App\Modules\Excursions\Data\ExcursionSeason;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -14,6 +17,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
@@ -39,11 +43,7 @@ class HomePageSettings extends Page
 
     public function mount(): void
     {
-        $this->form->fill(HomePageSetting::current()->only([
-            'title',
-            'text',
-            'background_image',
-        ]));
+        $this->form->fill($this->formState(HomePageSetting::current()));
     }
 
     public function form(Schema $schema): Schema
@@ -77,6 +77,23 @@ class HomePageSettings extends Page
                     ->openable()
                     ->downloadable()
                     ->columnSpanFull(),
+                Repeater::make('season_order')
+                    ->label('Порядок подборок')
+                    ->helperText('Перетащите подборки за левый край, чтобы изменить порядок их вывода на главной странице.')
+                    ->simple(
+                        Select::make('season')
+                            ->label('Подборка')
+                            ->options(ExcursionSeason::options())
+                            ->required()
+                            ->distinct()
+                            ->selectablePlaceholder(false)
+                            ->live()
+                            ->afterStateUpdated($this->swapSeasonWithSibling(...)),
+                    )
+                    ->addable(false)
+                    ->deletable(false)
+                    ->reorderableWithDragAndDrop()
+                    ->columnSpanFull(),
             ])
             ->statePath('data');
     }
@@ -101,17 +118,61 @@ class HomePageSettings extends Page
             ]);
     }
 
+    /**
+     * Меняет подборки местами, когда в двух строках выбрана одна и та же:
+     * соседу достаётся значение, которое было в текущей строке.
+     */
+    protected function swapSeasonWithSibling(Select $component, mixed $state, mixed $old, Set $set): void
+    {
+        $repeater = $component->getParentRepeater();
+
+        if (blank($state) || blank($old) || ! $repeater instanceof Repeater) {
+            return;
+        }
+
+        $currentItemKey = str($component->getStatePath())
+            ->after($repeater->getStatePath().'.')
+            ->before('.'.$component->getName())
+            ->toString();
+
+        foreach ($repeater->getRawState() ?? [] as $itemKey => $itemState) {
+            if ($itemKey === $currentItemKey || data_get($itemState, $component->getName()) !== $state) {
+                continue;
+            }
+
+            $set(
+                path: $repeater->getStatePath().'.'.$itemKey.'.'.$component->getName(),
+                state: $old,
+                isAbsolute: true,
+            );
+        }
+    }
+
+    /**
+     * @return array{title: string, text: string, background_image: ?string, season_order: array<int, string>}
+     */
+    protected function formState(HomePageSetting $settings): array
+    {
+        return [
+            ...$settings->only([
+                'title',
+                'text',
+                'background_image',
+            ]),
+            'season_order' => array_map(
+                fn (ExcursionSeason $season): string => $season->value,
+                $settings->orderedSeasons(),
+            ),
+        ];
+    }
+
     public function save(UpdateHomePageSettingsAction $updateSettings): void
     {
-        /** @var array{title: string, text: string, background_image: ?string} $data */
+        /** @var array{title: string, text: string, background_image: ?string, season_order: array<int, string>} $data */
         $data = $this->form->getState();
         $settings = $updateSettings->handle($data);
 
-        $this->form->fill($settings->only([
-            'title',
-            'text',
-            'background_image',
-        ]));
+        $this->form->fill($this->formState($settings));
 
         Notification::make()
             ->success()
