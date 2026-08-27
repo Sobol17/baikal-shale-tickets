@@ -79,7 +79,7 @@ class HomePageSettings extends Page
                     ->columnSpanFull(),
                 Repeater::make('season_order')
                     ->label('Порядок подборок')
-                    ->helperText('Перетащите подборки за левый край, чтобы изменить порядок их вывода на главной странице.')
+                    ->helperText('Перетащите, чтобы изменить порядок.')
                     ->simple(
                         Select::make('season')
                             ->label('Подборка')
