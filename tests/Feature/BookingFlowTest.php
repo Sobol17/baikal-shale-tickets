@@ -130,7 +130,7 @@ it('opens checkout from selected excursion date and ticket counts', function ():
         ->assertSee(route('excursions.show', $excursion), false)
         ->assertSee('Оформление')
         ->assertDontSee('Назад к экскурсии')
-        ->assertSee('Покупатель билетов')
+        ->assertSee('Покупатель экскурсии')
         ->assertSee('К оплате сейчас')
         ->assertSee('Предоплата 10%')
         ->assertSee('Полная стоимость')
