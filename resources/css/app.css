@@ -540,7 +540,7 @@ textarea {
 }
 
 .catalog-intro__stay:focus-visible,
-.stay-card__link:focus-visible {
+.stay-card:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 3px;
 }
@@ -938,6 +938,8 @@ textarea {
 .stay-card {
     display: grid;
     gap: 8px;
+    border-radius: var(--radius);
+    color: var(--brand);
 }
 
 .stay-card__image {
@@ -951,7 +953,6 @@ textarea {
 
 .stay-card__body h2 {
     margin: 0;
-    color: var(--brand);
     font-size: 18px;
     font-weight: 750;
     line-height: 1.2;
@@ -963,15 +964,38 @@ textarea {
     font-size: 14px;
 }
 
-.stay-card__link {
+.stay-card__action {
     display: inline-flex;
     min-height: 44px;
     align-items: center;
     gap: 8px;
-    color: var(--brand);
     font-size: 14px;
     font-weight: 750;
     line-height: 1.2;
+}
+
+.stay-card__label {
+    text-underline-offset: 3px;
+}
+
+.stay-card:focus-visible .stay-card__label {
+    text-decoration: underline;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .stay-card:hover .stay-card__label {
+        text-decoration: underline;
+    }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .stay-card__arrow {
+        transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .stay-card:hover .stay-card__arrow {
+        transform: translate(3px, -3px);
+    }
 }
 
 .slot-list {

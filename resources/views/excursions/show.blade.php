@@ -88,16 +88,17 @@
                 ])
             </section>
 
-            <section class="stay-card" aria-labelledby="stay-heading">
+            <a class="stay-card" href="https://baikal-shalet.baikalvisa.ru/#rooms" aria-label="Забронировать номер в «Байкал Шале»">
                 <img class="stay-card__image" src="{{ asset('images/baikal-shalet.webp') }}" alt="" width="800" height="534" loading="lazy">
                 <div class="stay-card__body">
-                    <h2 id="stay-heading">Гостевой дом «Байкал Шале»</h2>
+                    <h2>Гостевой дом «Байкал Шале»</h2>
                     <p>Листвянка</p>
-                    <a class="stay-card__link" href="https://baikal-shalet.baikalvisa.ru/#rooms" aria-label="Забронировать номер в «Байкал Шале»">
-                        Забронировать <span aria-hidden="true">↗</span>
-                    </a>
+                    <span class="stay-card__action">
+                        <span class="stay-card__label">Забронировать</span>
+                        <span class="stay-card__arrow" aria-hidden="true">↗</span>
+                    </span>
                 </div>
-            </section>
+            </a>
         </aside>
 
         <div class="detail-main">
