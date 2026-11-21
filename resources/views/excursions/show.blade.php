@@ -93,8 +93,8 @@
                 <div class="stay-card__body">
                     <h2 id="stay-heading">Гостевой дом «Байкал Шале»</h2>
                     <p>Листвянка</p>
-                    <a class="stay-card__link" href="https://baikal-shalet.baikalvisa.ru/#rooms">
-                        <span>Посмотреть номера</span> <span aria-hidden="true">↗</span>
+                    <a class="stay-card__link" href="https://baikal-shalet.baikalvisa.ru/#rooms" aria-label="Забронировать номер в «Байкал Шале»">
+                        Забронировать <span aria-hidden="true">↗</span>
                     </a>
                 </div>
             </section>

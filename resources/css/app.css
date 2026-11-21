@@ -528,14 +528,15 @@ textarea {
     max-width: 66ch;
 }
 
-.button.catalog-intro__stay {
+.catalog-intro__stay {
     min-height: 44px;
     gap: 8px;
     margin-top: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.65);
-    background: rgba(43, 43, 43, 0.75);
-    color: var(--white);
-    transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    background: color-mix(in srgb, var(--brand) 60%, transparent);
+    transition:
+        background-color 0.2s ease,
+        transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .catalog-intro__stay:focus-visible,
@@ -548,14 +549,8 @@ textarea {
     transform: scale(0.97);
 }
 
-@media (hover: hover) and (pointer: fine) {
-    .button.catalog-intro__stay:hover {
-        background: var(--ink);
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
-    .button.catalog-intro__stay {
+    .catalog-intro__stay {
         transition: none;
     }
 
@@ -941,21 +936,17 @@ textarea {
 }
 
 .stay-card {
-    overflow: hidden;
-    border-radius: var(--radius);
-    background: var(--paper);
+    display: grid;
+    gap: 8px;
 }
 
 .stay-card__image {
     display: block;
     width: 100%;
     height: 112px;
+    border-radius: var(--radius);
     object-fit: cover;
     object-position: center 45%;
-}
-
-.stay-card__body {
-    padding: 12px 16px 0;
 }
 
 .stay-card__body h2 {
@@ -981,11 +972,6 @@ textarea {
     font-size: 14px;
     font-weight: 750;
     line-height: 1.2;
-}
-
-.stay-card__link span:first-child {
-    text-decoration: underline;
-    text-underline-offset: 3px;
 }
 
 .slot-list {
