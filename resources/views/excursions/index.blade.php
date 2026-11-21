@@ -71,6 +71,9 @@
             <div>
                 <h1 class="page-title">{{ $homePageSettings->title }}</h1>
                 <p class="lead">{{ $homePageSettings->text }}</p>
+                <a class="button catalog-intro__stay" href="https://baikal-shalet.baikalvisa.ru/#rooms">
+                    Номера в «Байкал Шале» <span aria-hidden="true">↗</span>
+                </a>
             </div>
         </div>
     </section>

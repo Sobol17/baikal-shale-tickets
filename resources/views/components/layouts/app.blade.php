@@ -178,7 +178,6 @@
                     <nav aria-label="Footer navigation">
                         <h3 class="u-visually-hidden">Footer navigation</h3>
                         <ul>
-                            <li><a href="https://baikal-shalet.baikalvisa.ru/">Гостевой дом «Байкал Шале»</a></li>
                             <li><a href="https://baikal-shalet.baikalvisa.ru/#about" target="_blank">О нас</a></li>
                             <li><a href="https://baikal-shalet.baikalvisa.ru/#rooms" target="_blank">Наши номера</a></li>
                             <li><a href="https://baikal-shalet.baikalvisa.ru/#faq" target="_blank">FAQ</a></li>

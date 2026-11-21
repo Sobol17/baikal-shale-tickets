@@ -60,24 +60,47 @@
     </div>
 
     <div class="app-container detail-layout">
-        <main class="detail-main">
-            <section class="panel detail-hero">
-                <p class="kicker">{{ $excursion->season->label() }}</p>
-                <h1>{{ $excursion->title }}</h1>
-                <p class="lead">{{ $excursion->short_description }}</p>
+        <section class="panel detail-hero">
+            <p class="kicker">{{ $excursion->season->label() }}</p>
+            <h1>{{ $excursion->title }}</h1>
+            <p class="lead">{{ $excursion->short_description }}</p>
 
-                <div class="trip-facts">
-                    <div>
-                        <div class="fact-label">Длительность</div>
-                        <div class="fact-value">{{ $excursion->duration_hours_label }}</div>
-                    </div>
-                    <div>
-                        <div class="fact-label">Место встречи</div>
-                        <div class="fact-value">{{ $excursion->meeting_point }}</div>
-                    </div>
+            <div class="trip-facts">
+                <div>
+                    <div class="fact-label">Длительность</div>
+                    <div class="fact-value">{{ $excursion->duration_hours_label }}</div>
                 </div>
+                <div>
+                    <div class="fact-label">Место встречи</div>
+                    <div class="fact-value">{{ $excursion->meeting_point }}</div>
+                </div>
+            </div>
+        </section>
+
+        <aside class="detail-sidebar">
+            <section class="panel detail-purchase">
+                <h2 class="aside-title">Купить билет</h2>
+                <p class="muted-copy">Выберите дату и количество участников.</p>
+
+                @include('excursions.partials.booking-form', [
+                    'excursion' => $excursion,
+                    'showPrepaymentDetails' => true,
+                ])
             </section>
 
+            <section class="stay-card" aria-labelledby="stay-heading">
+                <img class="stay-card__image" src="{{ asset('images/baikal-shalet.webp') }}" alt="" width="800" height="534" loading="lazy">
+                <div class="stay-card__body">
+                    <h2 id="stay-heading">Гостевой дом «Байкал Шале»</h2>
+                    <p>Листвянка</p>
+                    <a class="stay-card__link" href="https://baikal-shalet.baikalvisa.ru/#rooms">
+                        <span>Посмотреть номера</span> <span aria-hidden="true">↗</span>
+                    </a>
+                </div>
+            </section>
+        </aside>
+
+        <div class="detail-main">
             <section class="panel content-panel">
                 <h2>Описание экскурсии</h2>
                 <div class="content-body">{!! $excursion->full_description !!}</div>
@@ -89,16 +112,6 @@
                     <p>{{ $excursion->rules }}</p>
                 </section>
             @endif
-        </main>
-
-        <aside class="panel detail-sidebar">
-            <h2 class="aside-title">Купить билет</h2>
-            <p class="muted-copy">Выберите дату и количество участников.</p>
-
-            @include('excursions.partials.booking-form', [
-                'excursion' => $excursion,
-                'showPrepaymentDetails' => true,
-            ])
-        </aside>
+        </div>
     </div>
 </x-layouts.app>
