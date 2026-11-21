@@ -11,6 +11,20 @@
 3. Заполнить `APP_KEY`, PostgreSQL credentials, SMTP и T-Bank credentials.
 4. Убедиться, что `TBANK_NOTIFICATION_URL` доступен по HTTPS.
 
+## TLS для Т-Банка
+
+Образ `app` собирает `TBANK_CA_BUNDLE` из системного набора CA и корневого сертификата Минцифры. Этот PEM-файл использует только клиент Т-Банка. В окружениях без `TBANK_CA_BUNDLE` клиент проверяет TLS через системное хранилище.
+
+Источник `docker/certs/russian-trusted-root-ca.crt` — [сертификат Госуслуг в PEM](https://gu-st.ru/content/lending/russian_trusted_root_ca_pem.crt). Отпечаток SHA-256 сертификата — `D2:6D:2D:02:31:B7:C3:9F:92:CC:73:85:12:BA:54:10:35:19:E4:40:5D:68:B5:BD:70:3E:97:88:CA:8E:CF:31`.
+
+Проверка соединения из контейнера без инициализации платежа:
+
+```bash
+docker compose exec -T app sh -c 'curl --cacert "$TBANK_CA_BUNDLE" --head --silent --show-error --max-time 10 --output /dev/null --write-out "HTTP=%{http_code} TLS=%{ssl_verify_result}\n" https://securepay.tinkoff.ru/v2/Init'
+```
+
+`TLS=0` подтверждает проверку сертификата. `HTTP=405` в этой проверке ожидаем, так как `Init` принимает `POST`.
+
 ## Запуск
 
 ```bash

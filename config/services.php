@@ -41,6 +41,7 @@ return [
 
     'tbank' => [
         'api_url' => env('TBANK_API_URL', 'https://securepay.tinkoff.ru'),
+        'ca_bundle' => env('TBANK_CA_BUNDLE'),
         'terminal_key' => env('TBANK_TERMINAL_KEY'),
         'password' => env('TBANK_PASSWORD'),
         'notification_url' => env('TBANK_NOTIFICATION_URL'),

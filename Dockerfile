@@ -59,7 +59,10 @@ COPY . .
 COPY --from=vendor /var/www/html/vendor ./vendor
 COPY --from=assets /app/public/build ./public/build
 
-RUN composer dump-autoload --optimize \
+ENV TBANK_CA_BUNDLE=/etc/ssl/certs/tbank-ca-bundle.pem
+
+RUN cat /etc/ssl/certs/ca-certificates.crt docker/certs/russian-trusted-root-ca.crt > "$TBANK_CA_BUNDLE" \
+    && composer dump-autoload --optimize \
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 

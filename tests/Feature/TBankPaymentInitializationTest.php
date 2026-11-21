@@ -7,19 +7,25 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 
-it('initializes tbank payment with booking aware result urls', function (): void {
+it('initializes tbank payment with booking aware result urls and TLS verification', function (?string $caBundle, bool|string $expectedVerify): void {
     Config::set('services.payments.default', 'tbank');
     Config::set('services.tbank.api_url', 'https://securepay.tinkoff.ru');
+    Config::set('services.tbank.ca_bundle', $caBundle);
     Config::set('services.tbank.terminal_key', 'terminal');
     Config::set('services.tbank.password', 'secret');
     Config::set('services.tbank.notification_url', 'https://example.com/payments/tbank/notifications');
 
-    Http::fake([
-        'securepay.tinkoff.ru/v2/Init' => Http::response([
-            'Success' => true,
-            'PaymentId' => '123456',
-            'PaymentURL' => 'https://securepay.tinkoff.ru/payment/123456',
-        ]),
+    $verify = null;
+    Http::preventStrayRequests()->fake([
+        'securepay.tinkoff.ru/v2/Init' => function (Request $request, array $options) use (&$verify) {
+            $verify = $options['verify'] ?? null;
+
+            return Http::response([
+                'Success' => true,
+                'PaymentId' => '123456',
+                'PaymentURL' => 'https://securepay.tinkoff.ru/payment/123456',
+            ]);
+        },
     ]);
 
     $excursion = Excursion::factory()->create([
@@ -38,6 +44,7 @@ it('initializes tbank payment with booking aware result urls', function (): void
     expect($payment->provider)->toBe('tbank');
     expect($payment->provider_payment_id)->toBe('123456');
     expect($payment->payment_url)->toBe('https://securepay.tinkoff.ru/payment/123456');
+    expect($verify)->toBe($expectedVerify);
 
     Http::assertSent(function (Request $request) use ($booking, $payment): bool {
         return $request->url() === 'https://securepay.tinkoff.ru/v2/Init'
@@ -58,4 +65,7 @@ it('initializes tbank payment with booking aware result urls', function (): void
             && $request['DATA']['payment_id'] === (string) $payment->id
             && filled($request['Token']);
     });
-});
+})->with([
+    'system trust store' => [null, true],
+    'T-Bank trust bundle' => ['/etc/ssl/certs/tbank-ca-bundle.pem', '/etc/ssl/certs/tbank-ca-bundle.pem'],
+]);

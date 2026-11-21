@@ -79,6 +79,7 @@ class TBankPaymentGateway implements PaymentGateway
 
         $response = Http::asJson()
             ->acceptJson()
+            ->withOptions(['verify' => config('services.tbank.ca_bundle') ?: true])
             ->timeout((int) config('services.tbank.timeout', 10))
             ->post(rtrim((string) config('services.tbank.api_url'), '/').'/v2/Init', $payload)
             ->throw()
